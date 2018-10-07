@@ -21,9 +21,9 @@ enum class ACAN2515CLKOUT_SOF {CLOCK, CLOCK2, CLOCK4, CLOCK8, SOF, HiZ} ;
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-class ACANSettings2515 {
+class ACAN2515Settings {
 //--- Constructor for a given baud rate
-  public: explicit ACANSettings2515 (const uint32_t inQuartzFrequency, // In Hertz
+  public: explicit ACAN2515Settings (const uint32_t inQuartzFrequency, // In Hertz
                                      const uint32_t inDesiredBitRate,
                                      const uint32_t inTolerancePPM = 1000) ;
 

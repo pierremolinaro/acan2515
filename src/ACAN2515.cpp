@@ -70,7 +70,7 @@ mTXBIsFree () {
 //   BEGIN
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::begin (const ACANSettings2515 & inSettings,
+uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void)) {
 
   return beginWithoutFilterCheck (inSettings, inInterruptServiceRoutine, ACAN2515Mask (), ACAN2515Mask (), NULL, 0) ;
@@ -78,7 +78,7 @@ uint32_t ACAN2515::begin (const ACANSettings2515 & inSettings,
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::begin (const ACANSettings2515 & inSettings,
+uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void),
                           const ACAN2515Mask inRXM0,
                           const ACAN2515AcceptanceFilter inAcceptanceFilters [],
@@ -99,7 +99,7 @@ uint32_t ACAN2515::begin (const ACANSettings2515 & inSettings,
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::begin (const ACANSettings2515 & inSettings,
+uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void),
                           const ACAN2515Mask inRXM0,
                           const ACAN2515Mask inRXM1,
@@ -121,7 +121,7 @@ uint32_t ACAN2515::begin (const ACANSettings2515 & inSettings,
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::beginWithoutFilterCheck (const ACANSettings2515 & inSettings,
+uint32_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
                                             void (* inInterruptServiceRoutine) (void),
                                             const ACAN2515Mask inRXM0,
                                             const ACAN2515Mask inRXM1,
@@ -228,7 +228,7 @@ bool ACAN2515::dispatchReceivedMessage (const tFilterMatchCallBack inFilterMatch
 //  INTERRUPTS ARE DISABLED WHEN THESE FUNCTIONS ARE EXECUTED
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::internalBeginOperation (const ACANSettings2515 & inSettings,
+uint32_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
                                            const ACAN2515Mask inRXM0,
                                            const ACAN2515Mask inRXM1,
                                            const ACAN2515AcceptanceFilter inAcceptanceFilters [],

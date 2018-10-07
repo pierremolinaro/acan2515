@@ -75,7 +75,7 @@ void setup () {
   SPI.setMISO (MCP2515_SO) ;
   SPI.setSCK (MCP2515_SCK) ;
 //--- Configure ACAN2515
-  ACANSettings2515 settings2515 (QUARTZ_FREQUENCY, CAN_BIT_RATE) ;
+  ACAN2515Settings settings2515 (QUARTZ_FREQUENCY, CAN_BIT_RATE) ;
   const uint32_t errorCode2515 = can.begin (settings2515, canISR) ;
   if (errorCode2515 == 0) {
     Serial.println ("ACAN2515 configuration: ok") ;

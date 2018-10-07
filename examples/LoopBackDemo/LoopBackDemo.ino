@@ -76,7 +76,7 @@ void setup () {
   SPI.setSCK (MCP2515_SCK) ;
 //--- Configure ACAN2515
   Serial.println ("Configure ACAN2515") ;
-  ACANSettings2515 settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s
+  ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
   const uint32_t errorCode = can.begin (settings, canISR) ;
   if (errorCode == 0) {

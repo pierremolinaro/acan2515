@@ -70,16 +70,16 @@ class ACAN2515 {
 
 
 //--- Initialisation: returns 0 if ok, otherwise see error codes below
-  public: uint32_t begin (const ACANSettings2515 & inSettings,
+  public: uint32_t begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void)) ;
 
-  public: uint32_t begin (const ACANSettings2515 & inSettings,
+  public: uint32_t begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void),
                           const ACAN2515Mask inRXM0,
                           const ACAN2515AcceptanceFilter inAcceptanceFilters [],
                           const uint32_t inAcceptanceFilterCount) ;
 
-  public: uint32_t begin (const ACANSettings2515 & inSettings,
+  public: uint32_t begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void),
                           const ACAN2515Mask inRXM0,
                           const ACAN2515Mask inRXM1,
@@ -144,14 +144,14 @@ class ACAN2515 {
   private: inline void select (void) { digitalWrite (mCS, LOW) ; }
   private: inline void unselect (void) { digitalWrite (mCS, HIGH) ; }
 
-  private: uint32_t beginWithoutFilterCheck (const ACANSettings2515 & inSettings,
+  private: uint32_t beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
                                              void (* inInterruptServiceRoutine) (void),
                                              const ACAN2515Mask inRXM0,
                                              const ACAN2515Mask inRXM1,
                                              const ACAN2515AcceptanceFilter inAcceptanceFilters [],
                                              const uint32_t inAcceptanceFilterCount) ;
 
-  private: uint32_t internalBeginOperation (const ACANSettings2515 & inSettings,
+  private: uint32_t internalBeginOperation (const ACAN2515Settings & inSettings,
                                             const ACAN2515Mask inRXM0,
                                             const ACAN2515Mask inRXM1,
                                             const ACAN2515AcceptanceFilter inAcceptanceFilters [] = NULL,

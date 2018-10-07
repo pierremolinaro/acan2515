@@ -11,7 +11,7 @@
 //    CAN Settings
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-ACANSettings2515::ACANSettings2515 (const uint32_t inQuartzFrequency,
+ACAN2515Settings::ACAN2515Settings (const uint32_t inQuartzFrequency,
                                     const uint32_t inWhishedBitRate,
                                     const uint32_t inTolerancePPM) :
 mQuartzFrequency (inQuartzFrequency) {
@@ -72,21 +72,21 @@ mQuartzFrequency (inQuartzFrequency) {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACANSettings2515::actualBitRate (void) const {
+uint32_t ACAN2515Settings::actualBitRate (void) const {
   const uint32_t TQCount = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 + mPhaseSegment2 ;
   return mQuartzFrequency / mBitRatePrescaler / TQCount / 2 ;
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-bool ACANSettings2515::exactBitRate (void) const {
+bool ACAN2515Settings::exactBitRate (void) const {
   const uint32_t TQCount = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 + mPhaseSegment2 ;
   return mQuartzFrequency == (mBitRatePrescaler * mDesiredBitRate * TQCount * 2) ;
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACANSettings2515::ppmFromDesiredBitRate (void) const {
+uint32_t ACAN2515Settings::ppmFromDesiredBitRate (void) const {
   const uint32_t TQCount = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 + mPhaseSegment2 ;
   const uint32_t W = TQCount * mDesiredBitRate * mBitRatePrescaler * 2 ;
   const uint64_t diff = (mQuartzFrequency > W) ? (mQuartzFrequency - W) : (W - mQuartzFrequency) ;
@@ -96,7 +96,7 @@ uint32_t ACANSettings2515::ppmFromDesiredBitRate (void) const {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACANSettings2515::samplePointFromBitStart (void) const {
+uint32_t ACAN2515Settings::samplePointFromBitStart (void) const {
   const uint32_t TQCount = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 + mPhaseSegment2 ;
   const uint32_t samplePoint = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 - mTripleSampling ;
   const uint32_t partPerCent = 100 ;
@@ -105,7 +105,7 @@ uint32_t ACANSettings2515::samplePointFromBitStart (void) const {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACANSettings2515::CANBitSettingConsistency (void) const {
+uint32_t ACAN2515Settings::CANBitSettingConsistency (void) const {
   uint32_t errorCode = 0 ; // Means no error
   if (mBitRatePrescaler == 0) {
     errorCode |= kBitRatePrescalerIsZero ;
