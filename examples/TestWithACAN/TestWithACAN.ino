@@ -74,6 +74,8 @@ void setup () {
   SPI.setMOSI (MCP2515_SI) ;
   SPI.setMISO (MCP2515_SO) ;
   SPI.setSCK (MCP2515_SCK) ;
+//--- Configure SPI
+  SPI.begin () ;
 //--- Configure ACAN2515
   ACAN2515Settings settings2515 (QUARTZ_FREQUENCY, CAN_BIT_RATE) ;
   const uint32_t errorCode2515 = can.begin (settings2515, canISR) ;

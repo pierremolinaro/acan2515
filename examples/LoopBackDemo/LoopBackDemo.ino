@@ -5,22 +5,14 @@
 #include <ACAN2515.h>
 
 //——————————————————————————————————————————————————————————————————————————————
-//  MCP2515 connections: adapt theses settings to your design
-//  As hardware SPI is used, you should select pins that support SPI functions.
-//  This sketch is designed for a Teensy 3.5, using SPI0 (named SPI)
-//  But standard Teensy 3.5 SPI0 pins are not used
-//    SCK input of MCP2515 is pin #27
-//    SI input of MCP2515 is pin #28
-//    SO output of MCP2515 is pin #39
-//  User code should configure MCP2515_IRQ pin as external interrupt
+//  MCP2515 connections:
+//    - standard SPI pins for SCK, MOSI and MISO
+//    - standard output for CS
+//    - interrupt input pin for INT
 //——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515 
-static const byte MCP2515_SI  = 28 ; // SI input of MCP2515  
-static const byte MCP2515_SO  = 39 ; // SO output of MCP2515 
-
-static const byte MCP2515_CS  = 20 ; // CS input of MCP2515 
-static const byte MCP2515_INT = 37 ; // INT output of MCP2515
+static const byte MCP2515_CS  = 0 ; // CS input of MCP2515 (adapt to your design) 
+static const byte MCP2515_INT = 2 ; // INT output of MCP2515 (adapt to your design)
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Driver object
@@ -40,7 +32,7 @@ void canISR (void) {
 //  MCP2515 Quartz: adapt to your design
 //——————————————————————————————————————————————————————————————————————————————
 
-static const uint32_t QUARTZ_FREQUENCY = 16 * 1000 * 1000 ; // 16 MHz
+static const uint32_t QUARTZ_FREQUENCY = 16UL * 1000UL * 1000UL ; // 16 MHz
 
 //——————————————————————————————————————————————————————————————————————————————
 //   SETUP
@@ -57,26 +49,11 @@ void setup () {
     delay (50) ;
     digitalWrite (LED_BUILTIN, !digitalRead (LED_BUILTIN)) ;
   }
-//--- Define alternate pins for SPI0 (see https://www.pjrc.com/teensy/td_libs_SPI.html)
-//    These settings are defined by Teensyduino for Teensy 3.x
-  Serial.print ("Using pin #") ;
-  Serial.print (MCP2515_SI) ;
-  Serial.print (" for MOSI: ") ;
-  Serial.println (SPI.pinIsMOSI (MCP2515_SI) ? "yes" : "NO!!!") ;
-  Serial.print ("Using pin #") ;
-  Serial.print (MCP2515_SO) ;
-  Serial.print (" for MISO: ") ;
-  Serial.println (SPI.pinIsMISO (MCP2515_SO) ? "yes" : "NO!!!") ;
-  Serial.print ("Using pin #") ;
-  Serial.print (MCP2515_SCK) ;
-  Serial.print (" for SCK: ") ;
-  Serial.println (SPI.pinIsSCK (MCP2515_SCK) ? "yes" : "NO!!!") ;
-  SPI.setMOSI (MCP2515_SI) ;
-  SPI.setMISO (MCP2515_SO) ;
-  SPI.setSCK (MCP2515_SCK) ;
+//--- Begin SPI
+  SPI.begin () ;
 //--- Configure ACAN2515
   Serial.println ("Configure ACAN2515") ;
-  ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s
+  ACAN2515Settings settings (QUARTZ_FREQUENCY, 125UL * 1000UL) ; // CAN bit rate 125 kb/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
   const uint32_t errorCode = can.begin (settings, canISR) ;
   if (errorCode == 0) {

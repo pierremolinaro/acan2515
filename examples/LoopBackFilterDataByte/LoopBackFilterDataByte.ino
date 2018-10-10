@@ -80,6 +80,8 @@ void setup () {
   SPI.setMOSI (MCP2515_SI) ;
   SPI.setMISO (MCP2515_SO) ;
   SPI.setSCK (MCP2515_SCK) ;
+//--- Configure SPI
+  SPI.begin () ;
 //--- Configure ACAN2515
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s

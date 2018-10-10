@@ -142,7 +142,6 @@ uint32_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
   //--- Configure ports
     pinMode (mCS, OUTPUT) ;
     digitalWrite (mCS, HIGH) ;  // CS is high outside a command
-    mSPI.begin () ;
   //--- Send software reset to MCP2515
     mSPI.beginTransaction (mSPISettings) ;
       select () ;

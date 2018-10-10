@@ -17,16 +17,17 @@ ACAN2515Settings::ACAN2515Settings (const uint32_t inQuartzFrequency,
 mQuartzFrequency (inQuartzFrequency) {
   if (mDesiredBitRate != inWhishedBitRate) {
     mDesiredBitRate = inWhishedBitRate ;
+    const uint32_t clock = mQuartzFrequency / 2 ;
     uint32_t TQCount = 25 ; // TQCount: 5 ... 25
     uint32_t smallestError = UINT32_MAX ;
     uint32_t bestBRP = 64 ; // Setting for slowest bit rate
     uint32_t bestTQCount = 25 ; // Setting for slowest bit rate
-    uint32_t BRP = mQuartzFrequency / inWhishedBitRate / TQCount / 2 ;
+    uint32_t BRP = clock / inWhishedBitRate / TQCount ;
   //--- Loop for finding best BRP and best TQCount
     while ((TQCount >= 5) && (BRP <= 64)) {
     //--- Compute error using BRP (caution: BRP should be > 0)
       if (BRP > 0) {
-        const uint32_t error = (mQuartzFrequency / TQCount / BRP / 2) - inWhishedBitRate ; // error is always >= 0
+        const uint32_t error = clock - inWhishedBitRate * TQCount * BRP ; // error is always >= 0
         if (error < smallestError) {
           smallestError = error ;
           bestBRP = BRP ;
@@ -35,7 +36,7 @@ mQuartzFrequency (inQuartzFrequency) {
       }
     //--- Compute error using BRP+1 (caution: BRP+1 should be <= 64)
       if (BRP < 64) {
-        const uint32_t error = inWhishedBitRate - (mQuartzFrequency / TQCount / 2 / (BRP + 1)) ; // error is always >= 0
+        const uint32_t error = inWhishedBitRate * TQCount * (BRP + 1) - clock ; // error is always >= 0
         if (error < smallestError) {
           smallestError = error ;
           bestBRP = BRP + 1 ;
@@ -44,7 +45,7 @@ mQuartzFrequency (inQuartzFrequency) {
       }
     //--- Continue with next value of TQCount
       TQCount -- ;
-      BRP = mQuartzFrequency / inWhishedBitRate / TQCount / 2 ;
+      BRP = clock / inWhishedBitRate / TQCount ;
     }
   //--- Set the BRP
     mBitRatePrescaler = (uint8_t) bestBRP ;
@@ -63,8 +64,8 @@ mQuartzFrequency (inQuartzFrequency) {
   //--- Triple sampling ?
     mTripleSampling = (inWhishedBitRate <= 125000) && (mPhaseSegment1 >= 2) ;
   //--- Final check of the configuration
-    const uint32_t W = bestTQCount * mDesiredBitRate * mBitRatePrescaler * 2 ;
-    const uint64_t diff = (mQuartzFrequency > W) ? (mQuartzFrequency - W) : (W - mQuartzFrequency) ;
+    const uint32_t W = bestTQCount * mDesiredBitRate * mBitRatePrescaler ;
+    const uint64_t diff = (clock > W) ? (clock - W) : (W - clock) ;
     const uint64_t ppm = (uint64_t) (1000UL * 1000UL) ; // UL suffix is required for Arduino Uno
     mBitRateClosedToDesiredRate = (diff * ppm) <= (((uint64_t) W) * inTolerancePPM) ;
   }
