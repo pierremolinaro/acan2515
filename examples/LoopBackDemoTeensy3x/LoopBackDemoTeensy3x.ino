@@ -8,9 +8,9 @@
 //  MCP2515 connections: adapt theses settings to your design
 //  This sketch is designed for a Teensy 3.5, using SPI0 (named SPI)
 //  But standard Teensy 3.5 SPI0 pins are not used
-//    SCK input of MCP2515 is pin #27
-//    SI input of MCP2515 is pin #28
-//    SO output of MCP2515 is pin #39
+//    SCK input of MCP2515 is connected to pin #27
+//    SI input of MCP2515 is connected to pin #28
+//    SO output of MCP2515 is connected to pin #39
 //  User code should configure MCP2515_IRQ pin as external interrupt
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -26,14 +26,6 @@ static const byte MCP2515_INT = 37 ; // INT output of MCP2515
 //——————————————————————————————————————————————————————————————————————————————
 
 ACAN2515 can (MCP2515_CS, SPI, MCP2515_INT) ;
-
-//——————————————————————————————————————————————————————————————————————————————
-//  MCP2515 Interrupt Service Routine
-//——————————————————————————————————————————————————————————————————————————————
-
-void canISR (void) {
-  can.isr () ;
-}
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Quartz: adapt to your design
@@ -79,7 +71,7 @@ void setup () {
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
-  const uint32_t errorCode = can.begin (settings, canISR) ;
+  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (errorCode == 0) {
     Serial.print ("Bit Rate prescaler: ") ;
     Serial.println (settings.mBitRatePrescaler) ;

@@ -9,9 +9,9 @@
 //  MCP2515 connections: adapt theses settings to your design
 //  This sketch is designed for an Adafruit Feather M0, using SERCOM1
 //  Standard Adafruit Feather M0 SPI pins are not used
-//    SCK input of MCP2515 is pin #12
-//    SI input of MCP2515 is pin #11
-//    SO output of MCP2515 is pin #10
+//    SCK input of MCP2515 is connected to pin #12
+//    SI input of MCP2515 is connected to pin #11
+//    SO output of MCP2515 is connected to pin #10
 //  - output pin for CS (MCP2515_CS)
 //  - interrupt input pin for INT (MCP2515_INT)
 //——————————————————————————————————————————————————————————————————————————————
@@ -32,14 +32,6 @@ static const byte MCP2515_INT =  5 ; // INT output of MCP2515
 //——————————————————————————————————————————————————————————————————————————————
 
 ACAN2515 can (MCP2515_CS, mySPI, MCP2515_INT) ;
-
-//——————————————————————————————————————————————————————————————————————————————
-//  MCP2515 Interrupt Service Routine
-//——————————————————————————————————————————————————————————————————————————————
-
-void canISR (void) {
-  can.isr () ;
-}
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Quartz: adapt to your design
@@ -72,7 +64,7 @@ void setup () {
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
-  const uint32_t errorCode = can.begin (settings, canISR) ;
+  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (errorCode == 0) {
     Serial.print ("Bit Rate prescaler: ") ;
     Serial.println (settings.mBitRatePrescaler) ;

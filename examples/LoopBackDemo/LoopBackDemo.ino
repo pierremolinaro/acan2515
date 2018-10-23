@@ -7,26 +7,22 @@
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 connections:
 //    - standard SPI pins for SCK, MOSI and MISO
-//    - standard output for CS
+//    - a digital output for CS
 //    - interrupt input pin for INT
 //——————————————————————————————————————————————————————————————————————————————
+// If you use CAN-BUS shield (http://wiki.seeedstudio.com/CAN-BUS_Shield_V2.0/) with Arduino Uno,
+// use B connections for MISO, MOSI, SCK, #9 or #10 for CS (as you want),
+// #2 or #3 for INT (as you want).
+//——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_CS  = 0 ; // CS input of MCP2515 (adapt to your design) 
-static const byte MCP2515_INT = 2 ; // INT output of MCP2515 (adapt to your design)
+static const byte MCP2515_CS  = 10 ; // CS input of MCP2515 (adapt to your design) 
+static const byte MCP2515_INT =  3 ; // INT output of MCP2515 (adapt to your design)
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Driver object
 //——————————————————————————————————————————————————————————————————————————————
 
 ACAN2515 can (MCP2515_CS, SPI, MCP2515_INT) ;
-
-//——————————————————————————————————————————————————————————————————————————————
-//  MCP2515 Interrupt Service Routine
-//——————————————————————————————————————————————————————————————————————————————
-
-void canISR (void) {
-  can.isr () ;
-}
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Quartz: adapt to your design
@@ -55,7 +51,7 @@ void setup () {
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125UL * 1000UL) ; // CAN bit rate 125 kb/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
-  const uint32_t errorCode = can.begin (settings, canISR) ;
+  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (errorCode == 0) {
     Serial.print ("Bit Rate prescaler: ") ;
     Serial.println (settings.mBitRatePrescaler) ;

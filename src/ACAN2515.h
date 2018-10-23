@@ -121,7 +121,7 @@ class ACAN2515 {
   private: ACANBuffer mReceiveBuffer ;
 
 //--- Call back function array
-  private: ACAN2515AcceptanceFilter::tCallBackRoutine mCallBackFunctionArray [6] ;
+  private: ACANCallBackRoutine mCallBackFunctionArray [6] ;
 
 //--- Driver transmit buffer
   private: ACANBuffer mTransmitBuffer [3] ;

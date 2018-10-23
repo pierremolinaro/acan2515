@@ -10,9 +10,9 @@
 //  As hardware SPI is used, you should select pins that support SPI functions.
 //  This sketch is designed for a Teensy 3.5, using SPI0 (named SPI)
 //  But standard Teensy 3.5 SPI0 pins are not used
-//    SCK input of MCP2515 is pin #27
-//    SI input of MCP2515 is pin #28
-//    SO output of MCP2515 is pin #39
+//    SCK input of MCP2515 is connected to pin #27
+//    SI input of MCP2515 is connected to pin #28
+//    SO output of MCP2515 is connected to pin #39
 //  User code should configure MCP2515_IRQ pin as external interrupt
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -28,14 +28,6 @@ static const byte MCP2515_INT = 37 ; // INT output of MCP2515
 //——————————————————————————————————————————————————————————————————————————————
 
 ACAN2515 can (MCP2515_CS, SPI, MCP2515_INT) ;
-
-//——————————————————————————————————————————————————————————————————————————————
-//  MCP2515 Interrupt Service Routine
-//——————————————————————————————————————————————————————————————————————————————
-
-void canISR (void) {
-  can.isr () ;
-}
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Quartz: adapt to your design
@@ -105,7 +97,7 @@ void setup () {
     {extended2515Filter (0x18765432), receive1},
     {standard2515Filter (0x560, 0x55, 0), receive2}
   } ;
-  const uint32_t errorCode = can.begin (settings, canISR, rxm0, rxm1, filters, 3) ;
+  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }, rxm0, rxm1, filters, 3) ;
   if (errorCode != 0) {
     Serial.print ("Configuration error 0x") ;
     Serial.println (errorCode, HEX) ;
