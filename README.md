@@ -30,19 +30,15 @@ static const byte MCP2515_INT = 37 ; // INT output of MCP2515, adapt to your des
 
 ACAN2515 can (MCP2515_CS, SPI, MCP2515_INT) ; // You can use SPI2, SPI3, if provided by your microcontroller
 
-void canISR (void) {
-  can.isr () ;
-}
-
 const uint32_t QUARTZ_FREQUENCY = 16 * 1000 * 1000 ; // 16 MHz
 
 void setup () {
   Serial.begin (9600) ;
   while (!Serial) {}
   Serial.println ("Hello") ;
-  ACANSettings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // 125 kbit/s
+  ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // 125 kbit/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
-  const uint32_t errorCode = can.begin (settings) ;
+  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (0 == errorCode) {
     Serial.println ("Can ok") ;
   }else{
@@ -93,7 +89,7 @@ The MCP2515 CAN Controller implements two acceptance masks and six acceptance fi
 For example (`loopbackUsingFilters` sketch):
 
 ```cpp
-  ACANSettings settings (QUARTZ_FREQUENCY, 125 * 1000) ;
+  ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ;
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
   const ACAN2515Mask rxm0 = extended2515Mask (0x1FFFFFFF) ; // For filter #0 and #1
   const ACAN2515Mask rxm1 = standard2515Mask (0x7F0, 0xFF, 0) ; // For filter #2 to #5
@@ -102,7 +98,7 @@ For example (`loopbackUsingFilters` sketch):
     {extended2515Filter (0x18765432), receive1},
     {standard2515Filter (0x560, 0x55, 0), receive2}
   } ;
-  const uint32_t errorCode = can.begin (settings, canISR, rxm0, rxm1, filters, 3) ;
+  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }, rxm0, rxm1, filters, 3) ;
 ```
 
 These settings enable the acceptance of extended frames whose identifier is 0x12345678 or 0x18765432, and data frames whose identifier is 0x560 and first data byte, if any, is 0x55.
