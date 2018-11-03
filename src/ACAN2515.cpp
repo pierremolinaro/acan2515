@@ -439,8 +439,8 @@ void ACAN2515::handleRXBInterrupt (void) {
   if (received) { // Message in RXB0 and / or RXB1
     const bool accessRXB0 = (rxStatus & 0x40) != 0 ;
     CANMessage message ;
-    message.rtr = (rxStatus & 0x08) != 0 ;
-    message.ext = (rxStatus & 0x10) != 0 ;
+    message.rtr = (rxStatus & 0x08) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
+    message.ext = (rxStatus & 0x10) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
   //--- Set idx field to matching receive filter
     message.idx = rxStatus & 0x07 ;
     if (message.idx > 5) {
