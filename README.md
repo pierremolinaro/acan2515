@@ -98,7 +98,7 @@ For example (`loopbackUsingFilters` sketch):
     {extended2515Filter (0x18765432), receive1},
     {standard2515Filter (0x560, 0x55, 0), receive2}
   } ;
-  const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }, rxm0, rxm1, filters, 3) ;
+  const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }, rxm0, rxm1, filters, 3) ;
 ```
 
 These settings enable the acceptance of extended frames whose identifier is 0x12345678 or 0x18765432, and data frames whose identifier is 0x560 and first data byte, if any, is 0x55.
