@@ -73,6 +73,36 @@ mQuartzFrequency (inQuartzFrequency) {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
+static uint32_t bitrateFrom (const uint32_t inQuartzFrequency, // In Hertz
+                             const uint8_t inBitRatePrescaler,  // 1...64
+                             const uint8_t inPropagationSegment, // 1...8
+                             const uint8_t inPhaseSegment1, // 1...8
+                             const uint8_t inPhaseSegment2) {// 2...8
+
+  const uint8_t TQ = 1 + inPropagationSegment + inPhaseSegment1 + inPhaseSegment2 ;
+  return inQuartzFrequency / inBitRatePrescaler / TQ / 2 ;
+}
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+ACAN2515Settings::ACAN2515Settings (const uint32_t inQuartzFrequency, // In Hertz
+                                    const uint8_t inBitRatePrescaler,  // 1...64
+                                    const uint8_t inPropagationSegment, // 1...8
+                                    const uint8_t inPhaseSegment1, // 1...8
+                                    const uint8_t inPhaseSegment2, // 2...8
+                                    const uint8_t inSJW) : // 1...4
+mQuartzFrequency (inQuartzFrequency),
+mDesiredBitRate (bitrateFrom (inQuartzFrequency, inBitRatePrescaler, inPropagationSegment, inPhaseSegment1, inPhaseSegment2)),
+mPropagationSegment (inPropagationSegment),
+mPhaseSegment1 (inPhaseSegment1),
+mPhaseSegment2 (inPhaseSegment2),
+mSJW (inSJW),
+mBitRatePrescaler (inBitRatePrescaler),
+mBitRateClosedToDesiredRate (true) {
+} ;
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
 uint32_t ACAN2515Settings::actualBitRate (void) const {
   const uint32_t TQCount = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 + mPhaseSegment2 ;
   return mQuartzFrequency / mBitRatePrescaler / TQCount / 2 ;
@@ -82,7 +112,7 @@ uint32_t ACAN2515Settings::actualBitRate (void) const {
 
 bool ACAN2515Settings::exactBitRate (void) const {
   const uint32_t TQCount = 1 /* Sync Seg */ + mPropagationSegment + mPhaseSegment1 + mPhaseSegment2 ;
-  return mQuartzFrequency == (mBitRatePrescaler * mDesiredBitRate * TQCount * 2) ;
+  return mQuartzFrequency == (mDesiredBitRate * mBitRatePrescaler * TQCount * 2) ;
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————

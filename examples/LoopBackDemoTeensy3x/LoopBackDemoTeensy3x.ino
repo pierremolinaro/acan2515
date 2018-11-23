@@ -14,11 +14,11 @@
 //  User code should configure MCP2515_IRQ pin as external interrupt
 //——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515 
-static const byte MCP2515_SI  = 28 ; // SI input of MCP2515  
-static const byte MCP2515_SO  = 39 ; // SO output of MCP2515 
+static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515
+static const byte MCP2515_SI  = 28 ; // SI input of MCP2515
+static const byte MCP2515_SO  = 39 ; // SO output of MCP2515
 
-static const byte MCP2515_CS  = 20 ; // CS input of MCP2515 
+static const byte MCP2515_CS  = 20 ; // CS input of MCP2515
 static const byte MCP2515_INT = 37 ; // INT output of MCP2515
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -101,9 +101,9 @@ void setup () {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-static unsigned gBlinkLedDate = 0 ;
-static unsigned gReceivedFrameCount = 0 ;
-static unsigned gSentFrameCount = 0 ;
+static uint32_t gBlinkLedDate = 0 ;
+static uint32_t gReceivedFrameCount = 0 ;
+static uint32_t gSentFrameCount = 0 ;
 
 //——————————————————————————————————————————————————————————————————————————————
 

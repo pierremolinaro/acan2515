@@ -1,5 +1,5 @@
 //——————————————————————————————————————————————————————————————————————————————
-//  ACAN2515 Demo in loopback mode, using hardware SPI, with an external interrupt
+//  ACAN2515 Demo in loopback mode for Adafruit Feather M0
 //——————————————————————————————————————————————————————————————————————————————
 
 #include <ACAN2515.h>
@@ -18,13 +18,13 @@
 
 // https://learn.adafruit.com/using-atsamd21-sercom-to-add-more-spi-i2c-serial-ports/overview
 
-static const byte MCP2515_SCK = 12 ; // SCK pin, SCK input of MCP2515 
-static const byte MCP2515_SI  = 11 ; // MOSI pin, SI input of MCP2515  
-static const byte MCP2515_SO  = 10 ; // MISO pin, SO output of MCP2515 
+static const byte MCP2515_SCK = 12 ; // SCK pin, SCK input of MCP2515
+static const byte MCP2515_SI  = 11 ; // MOSI pin, SI input of MCP2515
+static const byte MCP2515_SO  = 10 ; // MISO pin, SO output of MCP2515
 
 SPIClass mySPI (&sercom1, MCP2515_SO, MCP2515_SI, MCP2515_SCK, SPI_PAD_0_SCK_3, SERCOM_RX_PAD_2);
 
-static const byte MCP2515_CS  =  6 ; // CS input of MCP2515 
+static const byte MCP2515_CS  =  6 ; // CS input of MCP2515
 static const byte MCP2515_INT =  5 ; // INT output of MCP2515
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -94,9 +94,9 @@ void setup () {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-static unsigned gBlinkLedDate = 0 ;
-static unsigned gReceivedFrameCount = 0 ;
-static unsigned gSentFrameCount = 0 ;
+static uint32_t gBlinkLedDate = 0 ;
+static uint32_t gReceivedFrameCount = 0 ;
+static uint32_t gSentFrameCount = 0 ;
 
 //——————————————————————————————————————————————————————————————————————————————
 

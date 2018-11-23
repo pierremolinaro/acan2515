@@ -16,11 +16,11 @@
 //  User code should configure MCP2515_IRQ pin as external interrupt
 //——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515 
-static const byte MCP2515_SI  = 28 ; // SI input of MCP2515  
-static const byte MCP2515_SO  = 39 ; // SO output of MCP2515 
+static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515
+static const byte MCP2515_SI  = 28 ; // SI input of MCP2515
+static const byte MCP2515_SO  = 39 ; // SO output of MCP2515
 
-static const byte MCP2515_CS  = 20 ; // CS input of MCP2515 
+static const byte MCP2515_CS  = 20 ; // CS input of MCP2515
 static const byte MCP2515_INT = 37 ; // INT output of MCP2515
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -40,12 +40,12 @@ static const uint32_t QUARTZ_FREQUENCY = 16 * 1000 * 1000 ; // 16 MHz
 //——————————————————————————————————————————————————————————————————————————————
 // Extended frames are received by RXB0 --> mask RXM0, acceptance RXF0 and RXF1
 // Filters check all 29 bits of identifier
-//   acceptance filter #0 --> extended frame, identifier 0x12345678 
+//   acceptance filter #0 --> extended frame, identifier 0x12345678
 //   acceptance filter #1 --> extended frame, identifier 0x18765432
 
 // Standard frames are received by RXB1 --> mask RXM1, acceptance RXF2 to RXF5
 // Filter check identifier bits from 10 to 4, first byte, second byte is not tested
-//   acceptance filter #2 --> standard frame, identifier 0x560 to 0x56F, first byte 0x55 
+//   acceptance filter #2 --> standard frame, identifier 0x560 to 0x56F, first byte 0x55
 //——————————————————————————————————————————————————————————————————————————————
 
 static void receive0 (const CANMessage & inMessage) {
@@ -106,8 +106,8 @@ void setup () {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-static unsigned gBlinkLedDate = 0 ;
-static unsigned gSentFrameCount = 0 ;
+static uint32_t gBlinkLedDate = 0 ;
+static uint32_t gSentFrameCount = 0 ;
 static uint8_t gTransmitBufferIndex = 0 ;
 
 //——————————————————————————————————————————————————————————————————————————————

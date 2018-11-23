@@ -1,5 +1,5 @@
 //——————————————————————————————————————————————————————————————————————————————
-//  ACAN2515 / ACAN Demo 
+//  ACAN2515 / ACAN Demo
 //  ACAN2515 uses hardware SPI and an external interrupt pin
 //  This sketch runs only on a Teensy 3.x
 //  It uses the Teensy 3.x builtin CAN0 interface for testing intensive
@@ -29,10 +29,10 @@ static const uint32_t CAN_BIT_RATE = 1000 * 1000 ;
 //  User code should configure MCP2515_IRQ pin as external interrupt
 //——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_CS  = 20 ; // CS input of MCP2515 
-static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515 
-static const byte MCP2515_SI  = 28 ; // SI input of MCP2515  
-static const byte MCP2515_SO  = 39 ; // SO output of MCP2515 
+static const byte MCP2515_CS  = 20 ; // CS input of MCP2515
+static const byte MCP2515_SCK = 27 ; // SCK input of MCP2515
+static const byte MCP2515_SI  = 28 ; // SI input of MCP2515
+static const byte MCP2515_SO  = 39 ; // SO output of MCP2515
 static const byte MCP2515_INT = 37 ; // INT output of MCP2515
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -95,17 +95,17 @@ void setup () {
 
 //——————————————————————————————————————————————————————————————————————————————
 
-static unsigned gBlinkLedDate = 0 ;
-static unsigned gReceivedFrameCount = 0 ;
-static unsigned gReceivedFrameCount2515 = 0 ;
-static unsigned gSentFrameCount = 0 ;
-static unsigned gSentFrameCount2515 = 0 ;
+static uint32_t gBlinkLedDate = 0 ;
+static uint32_t gReceivedFrameCount = 0 ;
+static uint32_t gReceivedFrameCount2515 = 0 ;
+static uint32_t gSentFrameCount = 0 ;
+static uint32_t gSentFrameCount2515 = 0 ;
 
-static const unsigned MESSAGE_COUNT = 10 * 1000 ;
+static const uint32_t MESSAGE_COUNT = 10 * 1000 ;
 
 //——————————————————————————————————————————————————————————————————————————————
 // A CAN network requires that stations do not send frames with the same identifier.
-// So: 
+// So:
 //   - MCP2515 sends frame with even identifier values;
 //   - builtin CAN0 sends frame with odd identifier values;
 

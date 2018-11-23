@@ -59,9 +59,8 @@ mCS (inCS),
 mINT (inINT),
 mReceiveBuffer (),
 mCallBackFunctionArray (),
-mTransmitBuffer (),
 mTXBIsFree () {
-  for (uint32_t i=0 ; i<6 ; i++) {
+  for (uint8_t i=0 ; i<6 ; i++) {
     mCallBackFunctionArray [i] = NULL ;
   }
 }
@@ -70,7 +69,7 @@ mTXBIsFree () {
 //   BEGIN
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
+uint16_t ACAN2515::begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void)) {
 
   return beginWithoutFilterCheck (inSettings, inInterruptServiceRoutine, ACAN2515Mask (), ACAN2515Mask (), NULL, 0) ;
@@ -78,12 +77,12 @@ uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
+uint16_t ACAN2515::begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void),
                           const ACAN2515Mask inRXM0,
                           const ACAN2515AcceptanceFilter inAcceptanceFilters [],
-                          const uint32_t inAcceptanceFilterCount) {
-  uint32_t errorCode = 0 ;
+                          const uint8_t inAcceptanceFilterCount) {
+  uint16_t errorCode = 0 ;
   if (inAcceptanceFilterCount == 0) {
     errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters ;
   }else if (inAcceptanceFilterCount > 2) {
@@ -99,13 +98,13 @@ uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
+uint16_t ACAN2515::begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void),
                           const ACAN2515Mask inRXM0,
                           const ACAN2515Mask inRXM1,
                           const ACAN2515AcceptanceFilter inAcceptanceFilters [],
-                          const uint32_t inAcceptanceFilterCount) {
-  uint32_t errorCode = 0 ;
+                          const uint8_t inAcceptanceFilterCount) {
+  uint16_t errorCode = 0 ;
   if (inAcceptanceFilterCount < 3) {
     errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters ;
   }else if (inAcceptanceFilterCount > 6) {
@@ -121,13 +120,13 @@ uint32_t ACAN2515::begin (const ACAN2515Settings & inSettings,
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
+uint16_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
                                             void (* inInterruptServiceRoutine) (void),
                                             const ACAN2515Mask inRXM0,
                                             const ACAN2515Mask inRXM1,
                                             const ACAN2515AcceptanceFilter inAcceptanceFilters [],
-                                            const uint32_t inAcceptanceFilterCount) {
-  uint32_t errorCode = 0 ; // Means no error
+                                            const uint8_t inAcceptanceFilterCount) {
+  uint16_t errorCode = 0 ; // Means no error
 //----------------------------------- check mINT has interrupt capability
   const int8_t itPin = digitalPinToInterrupt (mINT) ;
   if (itPin == NOT_AN_INTERRUPT) {
@@ -162,37 +161,6 @@ uint32_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-//   MESSAGE EMISSION
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-bool ACAN2515::tryToSend (const CANMessage & inMessage) {
-//--- Find send buffer index
-  uint8_t idx = inMessage.idx ;
-  if (idx > 2) {
-    idx = 0 ;
-  }
-//--- Workaround: the Teensy 3.5 / 3.6 "SPI.usingInterrupt" bug
-//    https://github.com/PaulStoffregen/SPI/issues/35
-  #if (defined (__MK64FX512__) || defined (__MK66FX1M0__))
-    noInterrupts () ;
-  #endif
- //---
-  mSPI.beginTransaction (mSPISettings) ;
-    bool ok = mTXBIsFree [idx] ;
-    if (ok) { // Transmit buffer and TXB are both free: transmit immediatly
-      mTXBIsFree [idx] = false ;
-      internalSendMessage (inMessage, idx) ;
-    }else{ // Enter in transmit buffer, if not full
-      ok = mTransmitBuffer [idx].append (inMessage) ;
-    }
-  mSPI.endTransaction () ;
-  #if (defined (__MK64FX512__) || defined (__MK66FX1M0__))
-    interrupts () ;
-  #endif
-  return ok ;
-}
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 //   MESSAGE RECEPTION
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -219,7 +187,7 @@ bool ACAN2515::dispatchReceivedMessage (const tFilterMatchCallBack inFilterMatch
   CANMessage receivedMessage ;
   const bool hasReceived = receive (receivedMessage) ;
   if (hasReceived) {
-    const uint32_t filterIndex = receivedMessage.idx ;
+    const uint8_t filterIndex = receivedMessage.idx ;
     if (NULL != inFilterMatchCallBack) {
       inFilterMatchCallBack (filterIndex) ;
     }
@@ -235,12 +203,12 @@ bool ACAN2515::dispatchReceivedMessage (const tFilterMatchCallBack inFilterMatch
 //  INTERRUPTS ARE DISABLED WHEN THESE FUNCTIONS ARE EXECUTED
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
+uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
                                            const ACAN2515Mask inRXM0,
                                            const ACAN2515Mask inRXM1,
                                            const ACAN2515AcceptanceFilter inAcceptanceFilters [],
-                                           const uint32_t inAcceptanceFilterCount) {
-  uint32_t errorCode = 0 ; // Ok be default
+                                           const uint8_t inAcceptanceFilterCount) {
+  uint16_t errorCode = 0 ; // Ok be default
 //----------------------------------- Check if MCP2515 is accessible
   mSPI.beginTransaction (mSPISettings) ;
     write2515Register (CNF1_REGISTER, 0x55) ;
@@ -268,7 +236,7 @@ uint32_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
   //----------------------------------- Allocate transmit buffers
     mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size) ;
     mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size) ;
-    mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer1Size) ;
+    mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size) ;
     mTXBIsFree [0] = true ;
     mTXBIsFree [1] = true ;
     mTXBIsFree [2] = true ;
@@ -328,7 +296,7 @@ uint32_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
     setupMaskRegister (inRXM0, RXM0SIDH_REGISTER) ;
     setupMaskRegister (inRXM1, RXM1SIDH_REGISTER) ;
     if (inAcceptanceFilterCount > 0) {
-      uint32_t idx = 0 ;
+      uint8_t idx = 0 ;
       while (idx < inAcceptanceFilterCount) {
         setupMaskRegister (inAcceptanceFilters [idx].mMask, RXFSIDH_REGISTER [idx]) ;
         mCallBackFunctionArray [idx] = inAcceptanceFilters [idx].mCallBack ;
@@ -547,7 +515,7 @@ void ACAN2515::internalSendMessage (const CANMessage & inFrame, const uint8_t in
   mSPI.transfer (v) ;
 //--- Send data
   if (!inFrame.rtr) {
-    for (unsigned i=0 ; i<inFrame.len ; i++) {
+    for (uint8_t i=0 ; i<inFrame.len ; i++) {
       mSPI.transfer (inFrame.data [i]) ;
     }
   }
@@ -648,6 +616,45 @@ uint8_t ACAN2515::receiveErrorCounter (void) {
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+//   MESSAGE EMISSION
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+// void ACAN2515::allocateBuffers (const ACAN2515Settings & inSettings) {
+//   mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size) ;
+//   mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size) ;
+//   mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size) ;
+// }
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+bool ACAN2515::tryToSend (const CANMessage & inMessage) {
+//--- Find send buffer index
+  uint8_t idx = inMessage.idx ;
+  if (idx > 2) {
+    idx = 0 ;
+  }
+//--- Workaround: the Teensy 3.5 / 3.6 "SPI.usingInterrupt" bug
+//    https://github.com/PaulStoffregen/SPI/issues/35
+  #if (defined (__MK64FX512__) || defined (__MK66FX1M0__))
+    noInterrupts () ;
+  #endif
+ //---
+  mSPI.beginTransaction (mSPISettings) ;
+    bool ok = mTXBIsFree [idx] ;
+    if (ok) { // Transmit buffer and TXB are both free: transmit immediatly
+      mTXBIsFree [idx] = false ;
+      internalSendMessage (inMessage, idx) ;
+    }else{ // Enter in transmit buffer, if not full
+      ok = mTransmitBuffer [idx].append (inMessage) ;
+    }
+  mSPI.endTransaction () ;
+  #if (defined (__MK64FX512__) || defined (__MK66FX1M0__))
+    interrupts () ;
+  #endif
+  return ok ;
+}
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 //   FILTER HELPER FUNCTIONS
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -670,14 +677,6 @@ ACAN2515Mask extended2515Mask (const uint32_t inIdentifier) {
   result.mSIDL = (uint8_t) (((inIdentifier >> 16) & 0x03) | ((inIdentifier >> 13) & 0xE0)) ;
   result.mEID8 = (uint8_t) (inIdentifier >> 8) ;
   result.mEID0 = (uint8_t) inIdentifier ;
-//   Serial.print ("Mask ") ;
-//   Serial.print (result.mSIDH, HEX) ;
-//   Serial.print (" ") ;
-//   Serial.print (result.mSIDL, HEX) ;
-//   Serial.print (" ") ;
-//   Serial.print (result.mEID8, HEX) ;
-//   Serial.print (" ") ;
-//   Serial.println (result.mEID0, HEX) ;
   return result ;
 }
 
@@ -702,14 +701,6 @@ ACAN2515Mask extended2515Filter (const uint32_t inIdentifier) {
   result.mSIDL = (uint8_t) (((inIdentifier >> 16) & 0x03) | ((inIdentifier >> 13) & 0xE0)) | 0x08 ;
   result.mEID8 = (uint8_t) (inIdentifier >> 8) ;
   result.mEID0 = (uint8_t) inIdentifier ;
-//   Serial.print ("Acceptance ") ;
-//   Serial.print (result.mSIDH, HEX) ;
-//   Serial.print (" ") ;
-//   Serial.print (result.mSIDL, HEX) ;
-//   Serial.print (" ") ;
-//   Serial.print (result.mEID8, HEX) ;
-//   Serial.print (" ") ;
-//   Serial.println (result.mEID0, HEX) ;
   return result ;
 }
 

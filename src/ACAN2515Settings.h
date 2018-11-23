@@ -26,6 +26,13 @@ class ACAN2515Settings {
   public: explicit ACAN2515Settings (const uint32_t inQuartzFrequency, // In Hertz
                                      const uint32_t inDesiredBitRate,
                                      const uint32_t inTolerancePPM = 1000) ;
+//--- Constructor with explicit bit settings
+  public: explicit ACAN2515Settings (const uint32_t inQuartzFrequency, // In Hertz
+                                     const uint8_t inBitRatePrescaler,  // 1...64
+                                     const uint8_t inPropagationSegment, // 1...8
+                                     const uint8_t inPhaseSegment1, // 1...8
+                                     const uint8_t inPhaseSegment2, // 2...8
+                                     const uint8_t inSJW) ; // 1...4
 
 //--- CAN bit timing
   public: const uint32_t mQuartzFrequency ;

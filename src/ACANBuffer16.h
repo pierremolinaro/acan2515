@@ -1,10 +1,15 @@
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-// This file is not used any more by ACAN2515 driver.
-// It is provided for compatibility with sketchs that use it.
+// A CAN driver for MCP2517FD CAN Controller in CAN 2.0B mode
+// by Pierre Molinaro
+// https://github.com/pierremolinaro/acan2517
+//
+// This file is common with the acan2515 library
+// https://github.com/pierremolinaro/acan2515
+//
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-#ifndef ACAN_BUFFER_CLASS_DEFINED
-#define ACAN_BUFFER_CLASS_DEFINED
+#ifndef ACAN_BUFFER_16_CLASS_DEFINED
+#define ACAN_BUFFER_16_CLASS_DEFINED
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -12,17 +17,17 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-class ACANBuffer {
+class ACANBuffer16 {
 
 //······················································································································
 // Default constructor
 //······················································································································
 
-  public: ACANBuffer (void)  :
+  public: ACANBuffer16 (void)  :
   mBuffer (NULL),
   mSize (0),
   mReadIndex (0),
-  mWriteIndex (0),
+//  mWriteIndex (0),
   mCount (0),
   mPeakCount (0) {
   }
@@ -31,7 +36,7 @@ class ACANBuffer {
 // Destructor
 //······················································································································
 
-  public: ~ ACANBuffer (void) {
+  public: ~ ACANBuffer16 (void) {
     delete [] mBuffer ;
   }
 
@@ -40,29 +45,29 @@ class ACANBuffer {
 //······················································································································
 
   private: CANMessage * mBuffer ;
-  private: uint32_t mSize ;
-  private: uint32_t mReadIndex ;
-  private: uint32_t mWriteIndex ;
-  private: uint32_t mCount ;
-  private: uint32_t mPeakCount ; // > mSize if overflow did occur
+  private: uint16_t mSize ;
+  private: uint16_t mReadIndex ;
+//  private: uint16_t mWriteIndex ;
+  private: uint16_t mCount ;
+  private: uint16_t mPeakCount ; // > mSize if overflow did occur
 
 //······················································································································
 // Accessors
 //······················································································································
 
-  public: inline uint32_t size (void) const { return mSize ; }
-  public: inline uint32_t count (void) const { return mCount ; }
-  public: inline uint32_t peakCount (void) const { return mPeakCount ; }
+  public: inline uint16_t size (void) const { return mSize ; }
+  public: inline uint16_t count (void) const { return mCount ; }
+  public: inline uint16_t peakCount (void) const { return mPeakCount ; }
 
 //······················································································································
 // initWithSize
 //······················································································································
 
-  public: void initWithSize (const uint32_t inSize) {
+  public: void initWithSize (const uint16_t inSize) {
     mBuffer = new CANMessage [inSize] ;
     mSize = inSize ;
     mReadIndex = 0 ;
-    mWriteIndex = 0 ;
+ //   mWriteIndex = 0 ;
     mCount = 0 ;
     mPeakCount = 0 ;
   }
@@ -74,11 +79,16 @@ class ACANBuffer {
   public: bool append (const CANMessage & inMessage) {
     const bool ok = mCount < mSize ;
     if (ok) {
-      mBuffer [mWriteIndex] = inMessage ;
-      mWriteIndex += 1 ;
-      if (mWriteIndex == mSize) {
-        mWriteIndex = 0 ;
+      uint16_t writeIndex = mReadIndex + mCount ;
+      if (writeIndex >= mSize) {
+        writeIndex -= mSize ;
       }
+      mBuffer [writeIndex] = inMessage ;
+//       mBuffer [mWriteIndex] = inMessage ;
+//       mWriteIndex += 1 ;
+//       if (mWriteIndex == mSize) {
+//         mWriteIndex = 0 ;
+//       }
       mCount ++ ;
       if (mPeakCount < mCount) {
         mPeakCount = mCount ;
@@ -108,8 +118,8 @@ class ACANBuffer {
 // No copy
 //······················································································································
 
-  private: ACANBuffer (const ACANBuffer &) ;
-  private: ACANBuffer & operator = (const ACANBuffer &) ;
+  private: ACANBuffer16 (const ACANBuffer16 &) ;
+  private: ACANBuffer16 & operator = (const ACANBuffer16 &) ;
 } ;
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————

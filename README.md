@@ -38,7 +38,7 @@ void setup () {
   Serial.println ("Hello") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // 125 kbit/s
   settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
-  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
+  const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (0 == errorCode) {
     Serial.println ("Can ok") ;
   }else{
@@ -51,9 +51,9 @@ void setup () {
 Now, an example of the `loop` function. As we have selected loop back mode, every sent frame is received.
 
 ```cpp
-static unsigned gSendDate = 0 ;
-static unsigned gSentCount = 0 ;
-static unsigned gReceivedCount = 0 ;
+static uint32_t gSendDate = 0 ;
+static uint32_t gSentCount = 0 ;
+static uint32_t gReceivedCount = 0 ;
 
 void loop () {
   CANMessage message ;
@@ -98,7 +98,7 @@ For example (`loopbackUsingFilters` sketch):
     {extended2515Filter (0x18765432), receive1},
     {standard2515Filter (0x560, 0x55, 0), receive2}
   } ;
-  const uint32_t errorCode = can.begin (settings, [] { can.isr () ; }, rxm0, rxm1, filters, 3) ;
+  const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }, rxm0, rxm1, filters, 3) ;
 ```
 
 These settings enable the acceptance of extended frames whose identifier is 0x12345678 or 0x18765432, and data frames whose identifier is 0x560 and first data byte, if any, is 0x55.
