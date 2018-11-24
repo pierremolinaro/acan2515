@@ -136,8 +136,8 @@ uint32_t ACAN2515Settings::samplePointFromBitStart (void) const {
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-uint32_t ACAN2515Settings::CANBitSettingConsistency (void) const {
-  uint32_t errorCode = 0 ; // Means no error
+uint16_t ACAN2515Settings::CANBitSettingConsistency (void) const {
+  uint16_t errorCode = 0 ; // Means no error
   if (mBitRatePrescaler == 0) {
     errorCode |= kBitRatePrescalerIsZero ;
   }else if (mBitRatePrescaler > 64) {

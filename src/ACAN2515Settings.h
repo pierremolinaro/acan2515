@@ -13,15 +13,11 @@
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-enum class ACAN2515RequestedMode {NormalMode, ListenOnlyMode, LoopBackMode} ;
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-enum class ACAN2515CLKOUT_SOF {CLOCK, CLOCK2, CLOCK4, CLOCK8, SOF, HiZ} ;
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
 class ACAN2515Settings {
+//--- Enumerations
+  public: typedef enum {NormalMode, ListenOnlyMode, LoopBackMode} RequestedMode ;
+  public: typedef enum {CLOCK, CLOCK2, CLOCK4, CLOCK8, SOF, HiZ} CLKOUT_SOF ;
+
 //--- Constructor for a given baud rate
   public: explicit ACAN2515Settings (const uint32_t inQuartzFrequency, // In Hertz
                                      const uint32_t inDesiredBitRate,
@@ -61,11 +57,11 @@ class ACAN2515Settings {
 
 
 //--- Requested mode
-  public: ACAN2515RequestedMode mRequestedMode = ACAN2515RequestedMode::NormalMode ;
+  public: RequestedMode mRequestedMode = NormalMode ;
 
 
 //--- Signal on CLKOUT/SOF pin
-  public: ACAN2515CLKOUT_SOF mCLKOUT_SOF_pin = ACAN2515CLKOUT_SOF::CLOCK ;
+  public: CLKOUT_SOF mCLKOUT_SOF_pin = CLOCK ;
 
 
 //--- Rollover Enable Bit (is set to the BUKT bit of the RXB0CTRL register)
@@ -97,22 +93,22 @@ class ACAN2515Settings {
   public: uint32_t samplePointFromBitStart (void) const ;
 
 //--- Bit settings are consistent ? (returns 0 if ok)
-  public: uint32_t CANBitSettingConsistency (void) const ;
+  public: uint16_t CANBitSettingConsistency (void) const ;
 
 //--- Constants returned by CANBitSettingConsistency
-  public: static const uint32_t kBitRatePrescalerIsZero                 = 1 <<  0 ;
-  public: static const uint32_t kBitRatePrescalerIsGreaterThan64        = 1 <<  1 ;
-  public: static const uint32_t kPropagationSegmentIsZero               = 1 <<  2 ;
-  public: static const uint32_t kPropagationSegmentIsGreaterThan8       = 1 <<  3 ;
-  public: static const uint32_t kPhaseSegment1IsZero                    = 1 <<  4 ;
-  public: static const uint32_t kPhaseSegment1IsGreaterThan8            = 1 <<  5 ;
-  public: static const uint32_t kPhaseSegment2IsLowerThan2              = 1 <<  6 ;
-  public: static const uint32_t kPhaseSegment2IsGreaterThan8            = 1 <<  7 ;
-  public: static const uint32_t kPhaseSegment1Is1AndTripleSampling      = 1 <<  8 ;
-  public: static const uint32_t kSJWIsZero                              = 1 <<  9 ;
-  public: static const uint32_t kSJWIsGreaterThan4                      = 1 << 10 ;
-  public: static const uint32_t kSJWIsGreaterThanOrEqualToPhaseSegment2 = 1 << 11 ;
-  public: static const uint32_t kPhaseSegment2IsGreaterThanPSPlusPS1    = 1 << 12 ;
+  public: static const uint16_t kBitRatePrescalerIsZero                 = 1 <<  0 ;
+  public: static const uint16_t kBitRatePrescalerIsGreaterThan64        = 1 <<  1 ;
+  public: static const uint16_t kPropagationSegmentIsZero               = 1 <<  2 ;
+  public: static const uint16_t kPropagationSegmentIsGreaterThan8       = 1 <<  3 ;
+  public: static const uint16_t kPhaseSegment1IsZero                    = 1 <<  4 ;
+  public: static const uint16_t kPhaseSegment1IsGreaterThan8            = 1 <<  5 ;
+  public: static const uint16_t kPhaseSegment2IsLowerThan2              = 1 <<  6 ;
+  public: static const uint16_t kPhaseSegment2IsGreaterThan8            = 1 <<  7 ;
+  public: static const uint16_t kPhaseSegment1Is1AndTripleSampling      = 1 <<  8 ;
+  public: static const uint16_t kSJWIsZero                              = 1 <<  9 ;
+  public: static const uint16_t kSJWIsGreaterThan4                      = 1 << 10 ;
+  public: static const uint16_t kSJWIsGreaterThanOrEqualToPhaseSegment2 = 1 << 11 ;
+  public: static const uint16_t kPhaseSegment2IsGreaterThanPSPlusPS1    = 1 << 12 ;
 } ;
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————

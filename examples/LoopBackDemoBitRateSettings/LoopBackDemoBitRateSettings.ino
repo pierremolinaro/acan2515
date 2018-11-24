@@ -57,7 +57,7 @@ void setup () {
                              5, // Phase Segment2, 2...8
                              4) ; // SJW, 1...4
   settings.mTripleSampling = true ;
-  settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
+  settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (errorCode == 0) {
     Serial.print ("Bit Rate prescaler: ") ;

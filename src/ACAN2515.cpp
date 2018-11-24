@@ -250,7 +250,7 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
   //  Bit 5-3: -
   //  Bit 2-0: PHSEG2 - 1
     const uint8_t cnf3 =
-      ((inSettings.mCLKOUT_SOF_pin == ACAN2515CLKOUT_SOF::SOF) << 6) /* SOF */ |
+      ((inSettings.mCLKOUT_SOF_pin == ACAN2515Settings::SOF) << 6) /* SOF */ |
       ((inSettings.mPhaseSegment2 - 1) << 0) /* PHSEG2 */
     ;
    mSPI.transfer (cnf3) ;
@@ -315,33 +315,33 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
   //----------------------------------- Reset device to requested mode
     uint8_t canctrl = inSettings.mOneShotModeEnabled ? (1 << 3) : 0 ;
     switch (inSettings.mCLKOUT_SOF_pin) {
-    case ACAN2515CLKOUT_SOF::CLOCK :
-      canctrl = 0x04 | 0x00 ;
+    case ACAN2515Settings::CLOCK :
+      canctrl |= 0x04 | 0x00 ; // Same as default setting
       break ;
-    case ACAN2515CLKOUT_SOF::CLOCK2 :
+    case ACAN2515Settings::CLOCK2 :
       canctrl |= 0x04 | 0x01 ;
       break ;
-    case ACAN2515CLKOUT_SOF::CLOCK4 :
+    case ACAN2515Settings::CLOCK4 :
       canctrl |= 0x04 | 0x02 ;
       break ;
-    case ACAN2515CLKOUT_SOF::CLOCK8 :
+    case ACAN2515Settings::CLOCK8 :
       canctrl |= 0x04 | 0x03 ;
       break ;
-    case ACAN2515CLKOUT_SOF::SOF :
+    case ACAN2515Settings::SOF :
       canctrl |= 0x04 ;
       break ;
-    case ACAN2515CLKOUT_SOF::HiZ :
+    case ACAN2515Settings::HiZ :
       break ;
     }
   //--- Requested mode
     uint8_t requestedMode = 0 ;
     switch (inSettings.mRequestedMode) {
-    case ACAN2515RequestedMode::NormalMode :
+    case ACAN2515Settings::NormalMode :
       break ;
-    case ACAN2515RequestedMode::ListenOnlyMode :
+    case ACAN2515Settings::ListenOnlyMode :
       requestedMode = 0x03 << 5 ;
       break ;
-    case ACAN2515RequestedMode::LoopBackMode :
+    case ACAN2515Settings::LoopBackMode :
       requestedMode = 0x02 << 5 ;
       break ;
     }
@@ -619,14 +619,6 @@ uint8_t ACAN2515::receiveErrorCounter (void) {
 //   MESSAGE EMISSION
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-// void ACAN2515::allocateBuffers (const ACAN2515Settings & inSettings) {
-//   mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size) ;
-//   mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size) ;
-//   mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size) ;
-// }
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
 bool ACAN2515::tryToSend (const CANMessage & inMessage) {
 //--- Find send buffer index
   uint8_t idx = inMessage.idx ;
@@ -652,56 +644,6 @@ bool ACAN2515::tryToSend (const CANMessage & inMessage) {
     interrupts () ;
   #endif
   return ok ;
-}
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-//   FILTER HELPER FUNCTIONS
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-ACAN2515Mask standard2515Mask (const uint16_t inIdentifier,
-                               const uint8_t inByte0,
-                               const uint8_t inByte1) {
-  ACAN2515Mask result ;
-  result.mSIDH = (uint8_t) (inIdentifier >> 3) ;
-  result.mSIDL = (uint8_t) (inIdentifier << 5) ;
-  result.mEID8 = inByte0 ;
-  result.mEID0 = inByte1 ;
-  return result ;
-}
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-ACAN2515Mask extended2515Mask (const uint32_t inIdentifier) {
-  ACAN2515Mask result ;
-  result.mSIDH = (uint8_t) (inIdentifier >> 21) ;
-  result.mSIDL = (uint8_t) (((inIdentifier >> 16) & 0x03) | ((inIdentifier >> 13) & 0xE0)) ;
-  result.mEID8 = (uint8_t) (inIdentifier >> 8) ;
-  result.mEID0 = (uint8_t) inIdentifier ;
-  return result ;
-}
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-ACAN2515Mask standard2515Filter (const uint16_t inIdentifier,
-                                 const uint8_t inByte0,
-                                 const uint8_t inByte1) {
-  ACAN2515Mask result ;
-  result.mSIDH = (uint8_t) (inIdentifier >> 3) ;
-  result.mSIDL = (uint8_t) (inIdentifier << 5) ;
-  result.mEID8 = inByte0 ;
-  result.mEID0 = inByte1 ;
-  return result ;
-}
-
-//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-
-ACAN2515Mask extended2515Filter (const uint32_t inIdentifier) {
-  ACAN2515Mask result ;
-  result.mSIDH = (uint8_t) (inIdentifier >> 21) ;
-  result.mSIDL = (uint8_t) (((inIdentifier >> 16) & 0x03) | ((inIdentifier >> 13) & 0xE0)) | 0x08 ;
-  result.mEID8 = (uint8_t) (inIdentifier >> 8) ;
-  result.mEID0 = (uint8_t) inIdentifier ;
-  return result ;
 }
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————

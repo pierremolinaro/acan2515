@@ -77,7 +77,7 @@ void setup () {
 //--- Configure ACAN2515
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // CAN bit rate 125 kb/s
-  settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
+  settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const ACAN2515Mask rxm0 = standard2515Mask (0x7FF, 0xFF, 0) ; // For filter #0 and #1
   const ACAN2515AcceptanceFilter filters [] = {
     {standard2515Filter (0x560, 0x55, 0), receive0}

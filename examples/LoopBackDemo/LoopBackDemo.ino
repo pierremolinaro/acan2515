@@ -50,7 +50,7 @@ void setup () {
 //--- Configure ACAN2515
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125UL * 1000UL) ; // CAN bit rate 125 kb/s
-  settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
+  settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (errorCode == 0) {
     Serial.print ("Bit Rate prescaler: ") ;
