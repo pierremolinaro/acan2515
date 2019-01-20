@@ -221,25 +221,32 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
       errorCode = kNoMCP2515 ;
     }
   mSPI.endTransaction () ;
-//----------------------------------- If ok, check if settings are correct
+//----------------------------------- Check if settings are correct
   if (!inSettings.mBitRateClosedToDesiredRate) {
     errorCode |= kTooFarFromDesiredBitRate ;
   }
   if (inSettings.CANBitSettingConsistency () != 0) {
     errorCode |= kInconsistentBitRateSettings ;
   }
+//----------------------------------- Allocate buffer
+  if (!mReceiveBuffer.initWithSize (inSettings.mReceiveBufferSize)) {
+    errorCode |= kCannotAllocateReceiveBuffer ;
+  }
+  if (!mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size)) {
+    errorCode |= kCannotAllocateTransmitBuffer0 ;
+  }
+  if (!mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size)) {
+    errorCode |= kCannotAllocateTransmitBuffer1 ;
+  }
+  if (!mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size)) {
+    errorCode |= kCannotAllocateTransmitBuffer2 ;
+  }
+  mTXBIsFree [0] = true ;
+  mTXBIsFree [1] = true ;
+  mTXBIsFree [2] = true ;
 //----------------------------------- If ok, perform configuration
   if (errorCode == 0) {
     mSPI.beginTransaction (mSPISettings) ;
-  //----------------------------------- Allocate receive buffer
-    mReceiveBuffer.initWithSize (inSettings.mReceiveBufferSize) ;
-  //----------------------------------- Allocate transmit buffers
-    mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size) ;
-    mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size) ;
-    mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size) ;
-    mTXBIsFree [0] = true ;
-    mTXBIsFree [1] = true ;
-    mTXBIsFree [2] = true ;
   //----------------------------------- Set CNF3, CNF2, CNF1 and CANINTE registers
     select () ;
     mSPI.transfer (WRITE_COMMAND) ;

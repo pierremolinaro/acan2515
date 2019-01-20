@@ -47,7 +47,6 @@ class ACANBuffer16 {
   private: CANMessage * mBuffer ;
   private: uint16_t mSize ;
   private: uint16_t mReadIndex ;
-//  private: uint16_t mWriteIndex ;
   private: uint16_t mCount ;
   private: uint16_t mPeakCount ; // > mSize if overflow did occur
 
@@ -63,13 +62,15 @@ class ACANBuffer16 {
 // initWithSize
 //······················································································································
 
-  public: void initWithSize (const uint16_t inSize) {
+  public: bool initWithSize (const uint16_t inSize) {
+    delete [] mBuffer ;
     mBuffer = new CANMessage [inSize] ;
-    mSize = inSize ;
+    const bool ok = mBuffer != NULL ;
+    mSize = ok ? inSize : 0 ;
     mReadIndex = 0 ;
- //   mWriteIndex = 0 ;
     mCount = 0 ;
     mPeakCount = 0 ;
+    return ok ;
   }
 
 //······················································································································
@@ -84,11 +85,6 @@ class ACANBuffer16 {
         writeIndex -= mSize ;
       }
       mBuffer [writeIndex] = inMessage ;
-//       mBuffer [mWriteIndex] = inMessage ;
-//       mWriteIndex += 1 ;
-//       if (mWriteIndex == mSize) {
-//         mWriteIndex = 0 ;
-//       }
       mCount ++ ;
       if (mPeakCount < mCount) {
         mPeakCount = mCount ;

@@ -50,6 +50,10 @@ class ACAN2515 {
   public: static const uint16_t kAcceptanceFilterArrayIsNULL = 1 << 6 ;
   public: static const uint16_t kOneFilterMaskRequiresOneOrTwoAcceptanceFilters = 1 << 7 ;
   public: static const uint16_t kTwoFilterMasksRequireThreeToSixAcceptanceFilters = 1 << 8 ;
+  public: static const uint16_t kCannotAllocateReceiveBuffer = 1 << 9 ;
+  public: static const uint16_t kCannotAllocateTransmitBuffer0 = 1 << 10 ;
+  public: static const uint16_t kCannotAllocateTransmitBuffer1 = 1 << 11 ;
+  public: static const uint16_t kCannotAllocateTransmitBuffer2 = 1 << 12 ;
 
 //--- Receiving messages
   public: bool available (void) ;
@@ -70,6 +74,11 @@ class ACAN2515 {
 
 //--- Receive buffer
   private: ACANBuffer16 mReceiveBuffer ;
+
+//--- Receive buffer peak count
+  public: inline uint16_t receiveBufferPeakCount (void) const {
+    return mReceiveBuffer.peakCount () ;
+  }
 
 //--- Call back function array
   private: ACANCallBackRoutine mCallBackFunctionArray [6] ;
