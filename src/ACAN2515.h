@@ -54,6 +54,7 @@ class ACAN2515 {
   public: static const uint16_t kCannotAllocateTransmitBuffer0 = 1 << 10 ;
   public: static const uint16_t kCannotAllocateTransmitBuffer1 = 1 << 11 ;
   public: static const uint16_t kCannotAllocateTransmitBuffer2 = 1 << 12 ;
+  public: static const uint32_t kISRNotNullAndNoIntPin         = 1 << 13 ;
 
 //--- Receiving messages
   public: bool available (void) ;
@@ -63,6 +64,7 @@ class ACAN2515 {
 
 //--- Handling messages to send and receiving messages
   public: void isr (void) ;
+  public: bool isr_core (void) ;
   private: void handleTXBInterrupt (const uint8_t inTXB) ;
   private: void handleRXBInterrupt (void) ;
 
@@ -71,6 +73,9 @@ class ACAN2515 {
   private: const SPISettings mSPISettings ;
   private: const uint8_t mCS ;
   private: const uint8_t mINT ;
+  #ifdef ARDUINO_ARCH_ESP32
+    public: SemaphoreHandle_t mISRSemaphore ;
+  #endif
 
 //--- Receive buffer
   private: ACANBuffer16 mReceiveBuffer ;
@@ -102,6 +107,13 @@ class ACAN2515 {
     return mTransmitBuffer [inIndex].peakCount () ;
   }
   private: void internalSendMessage (const CANMessage & inFrame, const uint8_t inTXB) ;
+
+//······················································································································
+//    Polling
+//······················································································································
+
+  public: void poll (void) ;
+
 
 //--- Private methods
   private: inline void select (void) { digitalWrite (mCS, LOW) ; }

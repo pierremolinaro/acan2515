@@ -6,7 +6,7 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-ACAN2515 KEYWORD1
+ACAN2515	KEYWORD1
 ACAN2515Settings	KEYWORD1
 ACAN2515Mask	KEYWORD1
 CANMessage	KEYWORD1
@@ -21,6 +21,7 @@ receive	KEYWORD2
 dispatchReceivedMessage	KEYWORD2
 tryToSend	KEYWORD2
 isr	KEYWORD2
+poll	KEYWORD2
 
 standard2515Mask	KEYWORD2
 extended2515Mask	KEYWORD2
