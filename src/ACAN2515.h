@@ -17,13 +17,20 @@
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 class ACAN2515 {
-//--- Constructor: using hardware SPI
+
+//······················································································································
+//    Constructor: using hardware SPI
+//······················································································································
+
   public: ACAN2515 (const uint8_t inCS,  // CS input of MCP2515
                     SPIClass & inSPI, // Hardware SPI object
                     const uint8_t inINT) ; // INT output of MCP2515
 
 
-//--- Initialisation: returns 0 if ok, otherwise see error codes below
+//······················································································································
+//    Initialisation: returns 0 if ok, otherwise see error codes below
+//······················································································································
+
   public: uint16_t begin (const ACAN2515Settings & inSettings,
                           void (* inInterruptServiceRoutine) (void)) ;
 
@@ -40,7 +47,10 @@ class ACAN2515 {
                           const ACAN2515AcceptanceFilter inAcceptanceFilters [],
                           const uint8_t inAcceptanceFilterCount) ;
 
-//--- Error codes returned by begin
+//······················································································································
+//    Error codes returned by begin
+//······················································································································
+
   public: static const uint16_t kNoMCP2515                   = 1 <<  0 ;
   public: static const uint16_t kTooFarFromDesiredBitRate    = 1 <<  1 ;
   public: static const uint16_t kInconsistentBitRateSettings = 1 <<  2 ;
@@ -56,19 +66,64 @@ class ACAN2515 {
   public: static const uint16_t kCannotAllocateTransmitBuffer2 = 1 << 12 ;
   public: static const uint32_t kISRNotNullAndNoIntPin         = 1 << 13 ;
 
-//--- Receiving messages
+
+//······················································································································
+//    Change Mode on the fly
+//······················································································································
+
+  public: uint16_t changeModeOnTheFly (const ACAN2515Settings::RequestedMode inRequestedMode) ;
+
+
+//······················································································································
+//    Set filters on the fly
+//······················································································································
+
+  public: uint16_t setFiltersOnTheFly (void) ;
+
+  public: uint16_t setFiltersOnTheFly (const ACAN2515Mask inRXM0,
+                                       const ACAN2515AcceptanceFilter inAcceptanceFilters [],
+                                       const uint8_t inAcceptanceFilterCount) ;
+
+  public: uint16_t setFiltersOnTheFly (const ACAN2515Mask inRXM0,
+                                       const ACAN2515Mask inRXM1,
+                                       const ACAN2515AcceptanceFilter inAcceptanceFilters [],
+                                       const uint8_t inAcceptanceFilterCount) ;
+
+
+//······················································································································
+//    end
+//······················································································································
+
+  public: void end (void) ;
+
+
+//······················································································································
+//    Receiving messages
+//······················································································································
+
   public: bool available (void) ;
+
   public: bool receive (CANMessage & outFrame) ;
+
   public: typedef void (*tFilterMatchCallBack) (const uint8_t inFilterIndex) ;
+
   public: bool dispatchReceivedMessage (const tFilterMatchCallBack inFilterMatchCallBack = NULL) ;
 
-//--- Handling messages to send and receiving messages
+
+//······················································································································
+//    Handling messages to send and receiving messages
+//······················································································································
+
   public: void isr (void) ;
   public: bool isr_core (void) ;
   private: void handleTXBInterrupt (const uint8_t inTXB) ;
   private: void handleRXBInterrupt (void) ;
 
- //--- Properties
+
+//······················································································································
+//    Properties
+//······················································································································
+
   private: SPIClass & mSPI ;
   private: const SPISettings mSPISettings ;
   private: const uint8_t mCS ;
@@ -77,21 +132,41 @@ class ACAN2515 {
     public: SemaphoreHandle_t mISRSemaphore ;
   #endif
 
-//--- Receive buffer
+
+//······················································································································
+//    Receive buffer
+//······················································································································
+
   private: ACANBuffer16 mReceiveBuffer ;
 
-//--- Receive buffer peak count
+
+//······················································································································
+//    Receive buffer peak count
+//······················································································································
+
   public: inline uint16_t receiveBufferPeakCount (void) const {
     return mReceiveBuffer.peakCount () ;
   }
 
-//--- Call back function array
+
+//······················································································································
+//    Call back function array
+//······················································································································
+
   private: ACANCallBackRoutine mCallBackFunctionArray [6] ;
 
-//--- Transmitting messages
+
+//······················································································································
+//    Transmitting messages
+//······················································································································
+
   public: bool tryToSend (const CANMessage & inMessage) ;
 
-//--- Driver transmit buffer
+
+//······················································································································
+//    Driver transmit buffer
+//······················································································································
+
   private: ACANBuffer16 mTransmitBuffer [3] ;
   private: bool mTXBIsFree [3] ;
 
@@ -108,6 +183,7 @@ class ACAN2515 {
   }
   private: void internalSendMessage (const CANMessage & inFrame, const uint8_t inTXB) ;
 
+
 //······················································································································
 //    Polling
 //······················································································································
@@ -115,8 +191,12 @@ class ACAN2515 {
   public: void poll (void) ;
 
 
-//--- Private methods
+//······················································································································
+//    Private methods
+//······················································································································
+
   private: inline void select (void) { digitalWrite (mCS, LOW) ; }
+
   private: inline void unselect (void) { digitalWrite (mCS, HIGH) ; }
 
   private: uint16_t beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
@@ -133,19 +213,43 @@ class ACAN2515 {
                                             const uint8_t inAcceptanceFilterCount) ;
 
   private: void write2515Register (const uint8_t inRegister, const uint8_t inValue) ;
+
   private: uint8_t read2515Register (const uint8_t inRegister) ;
+
   private: uint8_t read2515Status (void) ;
+
   private: uint8_t read2515RxStatus (void) ;
+
   private: void bitModify2515Register (const uint8_t inRegister, const uint8_t inMask, const uint8_t inData) ;
+
   private: void setupMaskRegister (const ACAN2515Mask inMask, const uint8_t inRegister) ;
 
-//--- MCP2515 controller state
+  private: uint16_t setRequestedMode (const uint8_t inCANControlRegister) ;
+
+
+  private: uint16_t internalSetFiltersOnTheFly (const ACAN2515Mask inRXM0,
+                                                const ACAN2515Mask inRXM1,
+                                                const ACAN2515AcceptanceFilter inAcceptanceFilters [],
+                                                const uint8_t inAcceptanceFilterCount) ;
+
+
+//······················································································································
+//    MCP2515 controller state
+//······················································································································
+
   public: uint8_t receiveErrorCounter (void) ;
   public: uint8_t transmitErrorCounter (void) ;
 
-//--- No Copy
-  private: ACAN2515 (const ACAN2515 &) ;
-  private: ACAN2515 & operator = (const ACAN2515 &) ;
+
+//······················································································································
+//    No Copy
+//······················································································································
+
+  private: ACAN2515 (const ACAN2515 &) = delete ;
+  private: ACAN2515 & operator = (const ACAN2515 &) = delete ;
+
+//······················································································································
+
 } ;
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————

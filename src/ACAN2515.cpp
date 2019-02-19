@@ -175,17 +175,6 @@ uint16_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
   if ((mINT == 255) && (inInterruptServiceRoutine != NULL)) {
     errorCode |= kISRNotNullAndNoIntPin ;
   }
-
-
-//----------------------------------- check mINT has interrupt capability
-//   const int8_t itPin = digitalPinToInterrupt (mINT) ;
-//   if (itPin == NOT_AN_INTERRUPT) {
-//     errorCode = kINTPinIsNotAnInterrupt ;
-//   }
-//----------------------------------- Check isr is not NULL
-//   if (inInterruptServiceRoutine == NULL) {
-//     errorCode |= kISRIsNull ;
-//   }
 //----------------------------------- if no error, configure port and MCP2515
   if (errorCode == 0) {
   //--- Configure ports
@@ -396,6 +385,7 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
     write2515Register (TXB0CTRL_REGISTER, inSettings.mTXBPriority & 3) ;
     write2515Register (TXB1CTRL_REGISTER, (inSettings.mTXBPriority >> 2) & 3) ;
     write2515Register (TXB2CTRL_REGISTER, (inSettings.mTXBPriority >> 4) & 3) ;
+    mSPI.endTransaction () ;
   //----------------------------------- Reset device to requested mode
     uint8_t canctrl = inSettings.mOneShotModeEnabled ? (1 << 3) : 0 ;
     switch (inSettings.mCLKOUT_SOF_pin) {
@@ -417,38 +407,161 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
     case ACAN2515Settings::HiZ :
       break ;
     }
-  //--- Requested mode
-    uint8_t requestedMode = 0 ;
-    switch (inSettings.mRequestedMode) {
-    case ACAN2515Settings::NormalMode :
-      break ;
-    case ACAN2515Settings::ListenOnlyMode :
-      requestedMode = 0x03 << 5 ;
-      break ;
-    case ACAN2515Settings::LoopBackMode :
-      requestedMode = 0x02 << 5 ;
-      break ;
-    }
   //--- Request mode
-    write2515Register (CANCTRL_REGISTER, canctrl | requestedMode) ;
-    mSPI.endTransaction () ;
-  //--- Wait until requested mode is reached (during 1 or 2 ms)
-    bool wait = true ;
-    const uint32_t deadline = millis () + 2 ;
-    while (wait) {
-      mSPI.beginTransaction (mSPISettings) ;
-        const uint8_t actualMode = read2515Register (CANSTAT_REGISTER) & 0xE0 ;
-      mSPI.endTransaction () ;
-      wait = actualMode != requestedMode ;
-      if (wait && (millis () >= deadline)) {
-        errorCode |= kRequestedModeTimeOut ;
-        wait = false ;
-      }
-    }
+    const uint8_t requestedMode = (uint8_t) inSettings.mRequestedMode ;
+    errorCode |= setRequestedMode (canctrl | requestedMode) ;
   }
 //-----------------------------------
   return errorCode ;
 }
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+//   setRequestedMode (private method)
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+uint16_t ACAN2515::setRequestedMode (const uint8_t inCANControlRegister) {
+  uint16_t errorCode = 0 ;
+//--- Request mode
+  mSPI.beginTransaction (mSPISettings) ;
+    write2515Register (CANCTRL_REGISTER, inCANControlRegister) ;
+  mSPI.endTransaction () ;
+//--- Wait until requested mode is reached (during 1 or 2 ms)
+  bool wait = true ;
+  const uint32_t deadline = millis () + 2 ;
+  while (wait) {
+    mSPI.beginTransaction (mSPISettings) ;
+      const uint8_t actualMode = read2515Register (CANSTAT_REGISTER) & 0xE0 ;
+    mSPI.endTransaction () ;
+    wait = actualMode != (inCANControlRegister & 0xE0) ;
+    if (wait && (millis () >= deadline)) {
+      errorCode |= kRequestedModeTimeOut ;
+      wait = false ;
+    }
+  }
+//---
+  return errorCode ;
+}
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+//    Change Mode
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+uint16_t ACAN2515::changeModeOnTheFly (const ACAN2515Settings::RequestedMode inRequestedMode) {
+//--- Read current mode register (for saving settings of bits 0 ... 4)
+  mSPI.beginTransaction (mSPISettings) ;
+    const uint8_t currentMode = read2515Register (CANCTRL_REGISTER) ;
+  mSPI.endTransaction () ;
+//--- New mode
+  const uint8_t newMode = (currentMode & 0x1F) | (uint8_t) inRequestedMode ;
+//--- Set new mode
+  const uint16_t errorCode = setRequestedMode (newMode) ;
+//---
+  return errorCode ;
+}
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+//    Set filters on the fly
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+uint16_t ACAN2515::setFiltersOnTheFly (void) {
+  return internalSetFiltersOnTheFly (ACAN2515Mask (), ACAN2515Mask (), NULL, 0) ;
+}
+
+//······················································································································
+
+uint16_t ACAN2515::setFiltersOnTheFly (const ACAN2515Mask inRXM0,
+                                       const ACAN2515AcceptanceFilter inAcceptanceFilters [],
+                                       const uint8_t inAcceptanceFilterCount) {
+  uint16_t errorCode = 0 ;
+  if (inAcceptanceFilterCount == 0) {
+    errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters ;
+  }else if (inAcceptanceFilterCount > 2) {
+    errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters ;
+  }else if (inAcceptanceFilters == NULL) {
+    errorCode = kAcceptanceFilterArrayIsNULL ;
+  }else{
+    errorCode = internalSetFiltersOnTheFly (inRXM0, ACAN2515Mask (), inAcceptanceFilters, inAcceptanceFilterCount) ;
+  }
+  return errorCode ;
+}
+
+//······················································································································
+
+uint16_t ACAN2515::setFiltersOnTheFly (const ACAN2515Mask inRXM0,
+                                       const ACAN2515Mask inRXM1,
+                                       const ACAN2515AcceptanceFilter inAcceptanceFilters [],
+                                       const uint8_t inAcceptanceFilterCount) {
+  uint16_t errorCode = 0 ;
+  if (inAcceptanceFilterCount < 3) {
+    errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters ;
+  }else if (inAcceptanceFilterCount > 6) {
+    errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters ;
+  }else if (inAcceptanceFilters == NULL) {
+    errorCode = kAcceptanceFilterArrayIsNULL ;
+  }else{
+    errorCode = internalSetFiltersOnTheFly (inRXM0, inRXM1, inAcceptanceFilters, inAcceptanceFilterCount) ;
+  }
+  return errorCode ;
+}
+
+//······················································································································
+
+uint16_t ACAN2515::internalSetFiltersOnTheFly (const ACAN2515Mask inRXM0,
+                                               const ACAN2515Mask inRXM1,
+                                               const ACAN2515AcceptanceFilter inAcceptanceFilters [],
+                                               const uint8_t inAcceptanceFilterCount) {
+//--- Read current mode register
+  mSPI.beginTransaction (mSPISettings) ;
+    const uint8_t currentMode = read2515Register (CANCTRL_REGISTER) ;
+  mSPI.endTransaction () ;
+//--- Request configuration mode
+  const uint8_t configurationMode = (currentMode & 0x1F) | (0b100 << 5) ; // Preserve bits 0 ... 4
+  uint16_t errorCode = setRequestedMode (configurationMode) ;
+//--- Setup mask registers
+  if (errorCode == 0) {
+    setupMaskRegister (inRXM0, RXM0SIDH_REGISTER) ;
+    setupMaskRegister (inRXM1, RXM1SIDH_REGISTER) ;
+    if (inAcceptanceFilterCount > 0) {
+      uint8_t idx = 0 ;
+      while (idx < inAcceptanceFilterCount) {
+        setupMaskRegister (inAcceptanceFilters [idx].mMask, RXFSIDH_REGISTER [idx]) ;
+        mCallBackFunctionArray [idx] = inAcceptanceFilters [idx].mCallBack ;
+        idx += 1 ;
+      }
+      while (idx < 6) {
+        setupMaskRegister (inAcceptanceFilters [inAcceptanceFilterCount-1].mMask, RXFSIDH_REGISTER [idx]) ;
+        mCallBackFunctionArray [idx] = inAcceptanceFilters [inAcceptanceFilterCount-1].mCallBack ;
+        idx += 1 ;
+      }
+    }
+  }
+//--- Restore saved mode
+  if (errorCode == 0) {
+    errorCode = setRequestedMode (currentMode) ;
+  }
+//---
+  return errorCode ;
+}
+
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+//    end
+//——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+void ACAN2515::end (void) {
+//--- Remove interrupt capability of mINT pin
+  if (mINT != 255) {
+    detachInterrupt (digitalPinToInterrupt (mINT)) ;
+  }
+//--- Request configuration mode
+  const uint8_t configurationMode = (0b100 << 5) ;
+  const uint16_t errorCode __attribute__((unused)) = setRequestedMode (configurationMode) ;
+//--- Deallocate driver buffers
+  mTransmitBuffer [0].free () ;
+  mTransmitBuffer [1].free () ;
+  mTransmitBuffer [2].free () ;
+  mReceiveBuffer.free () ;
+}
+
 
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 //    POLLING (ESP32)

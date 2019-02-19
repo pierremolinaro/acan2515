@@ -45,7 +45,7 @@ mQuartzFrequency (inQuartzFrequency) {
       }
     //--- Continue with next value of TQCount
       TQCount -- ;
-      BRP = clock / inWhishedBitRate / TQCount ;
+      BRP = clock / (inWhishedBitRate * TQCount) ;
     }
   //--- Set the BRP
     mBitRatePrescaler = (uint8_t) bestBRP ;
