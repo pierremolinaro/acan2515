@@ -7,7 +7,6 @@
 // https://github.com/pierremolinaro/acan2515
 // https://github.com/pierremolinaro/acan2517
 // https://github.com/pierremolinaro/acan2517FD
-//
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 #ifndef GENERIC_CAN_MESSAGE_DEFINED

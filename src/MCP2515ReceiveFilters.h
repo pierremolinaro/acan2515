@@ -2,8 +2,6 @@
 // MCP2515 Receive filter classes
 // by Pierre Molinaro
 // https://github.com/pierremolinaro/acan2515
-// https://github.com/pierremolinaro/acan2515Tiny
-//
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 #ifndef MCP2515_RECEIVE_FILTER_ENTITIES_DEFINED

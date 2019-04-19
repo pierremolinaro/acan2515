@@ -1,11 +1,10 @@
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-// A CAN driver for MCP2517FD CAN Controller in CAN 2.0B mode
+// A CAN driver for MCP2515
 // by Pierre Molinaro
-// https://github.com/pierremolinaro/acan2517
-//
-// This file is common with the acan2515 library
 // https://github.com/pierremolinaro/acan2515
 //
+// This file is common with the acan2517 library
+// https://github.com/pierremolinaro/acan2517
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 #ifndef ACAN_BUFFER_16_CLASS_DEFINED

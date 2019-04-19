@@ -2,7 +2,6 @@
 // A CAN driver for MCP2515
 // by Pierre Molinaro
 // https://github.com/pierremolinaro/acan2515
-//
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 #include <ACAN2515.h>
@@ -343,7 +342,7 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
   //  Bit 7-6: SJW - 1
   //  Bit 5-0: BRP - 1
     const uint8_t cnf1 =
-      (inSettings.mSJW << 6) /* SJW */ |
+      ((inSettings.mSJW - 1) << 6) /* SJW */ | // Incorrect SJW setting fixed in 2.0.1
       ((inSettings.mBitRatePrescaler - 1) << 0) /* BRP */
     ;
     mSPI.transfer (cnf1) ;
@@ -618,8 +617,10 @@ bool ACAN2515::isr_core (void) {
     case 0 : // No interrupt
       break ;
     case 1 << 1 : // Error interrupt
+      bitModify2515Register (CANINTF_REGISTER, 0x20, 0) ; // Ack interrupt
       break ;
     case 2 << 1 : // Wake-up interrupt
+      bitModify2515Register (CANINTF_REGISTER, 0x40, 0) ; // Ack interrupt
       break ;
     case 3 << 1 : // TXB0 interrupt
       handleTXBInterrupt (0) ;

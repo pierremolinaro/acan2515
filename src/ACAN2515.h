@@ -2,7 +2,6 @@
 // A CAN driver for MCP2515
 // by Pierre Molinaro
 // https://github.com/pierremolinaro/acan2515
-//
 //——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 #pragma once
