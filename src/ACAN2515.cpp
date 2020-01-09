@@ -192,7 +192,9 @@ uint16_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
     delayMicroseconds (10) ;
   //--- Internal begin
     errorCode = internalBeginOperation (inSettings, inRXM0, inRXM1, inAcceptanceFilters, inAcceptanceFilterCount) ;
-  //--- Configure interrupt
+  }
+//--- Configure interrupt only if no error (thanks to mvSarma)
+  if (errorCode == 0) {
     #ifdef ARDUINO_ARCH_ESP32
       xTaskCreate (myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL) ;
     #endif
