@@ -7,6 +7,7 @@
 // https://github.com/pierremolinaro/acan2515
 // https://github.com/pierremolinaro/acan2517
 // https://github.com/pierremolinaro/acan2517FD
+//
 //----------------------------------------------------------------------------------------------------------------------
 
 #ifndef GENERIC_CAN_MESSAGE_DEFINED
@@ -25,9 +26,10 @@ class CANMessage {
   public : uint8_t idx = 0 ;  // This field is used by the driver
   public : uint8_t len = 0 ;  // Length of data (0 ... 8)
   public : union {
-    uint64_t data64     ; // Caution: subject to endianness
-    uint32_t data32 [2] ; // Caution: subject to endianness
-    uint16_t data16 [4] ; // Caution: subject to endianness
+    uint64_t data64        ; // Caution: subject to endianness
+    uint32_t data32 [2]    ; // Caution: subject to endianness
+    uint16_t data16 [4]    ; // Caution: subject to endianness
+    float    dataFloat [2] ; // Caution: subject to endianness
     uint8_t  data   [8] = {0, 0, 0, 0, 0, 0, 0, 0} ;
   } ;
 } ;

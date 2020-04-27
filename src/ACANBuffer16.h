@@ -45,7 +45,7 @@ class ACANBuffer16 {
   private: CANMessage * mBuffer ;
   private: uint16_t mSize ;
   private: uint16_t mReadIndex ;
-  private: uint16_t mCount ;
+  private: volatile uint16_t mCount ;
   private: uint16_t mPeakCount ; // > mSize if overflow did occur
 
 //······················································································································
