@@ -37,7 +37,7 @@ void setup () {
   while (!Serial) {}
   Serial.println ("Hello") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ; // 125 kbit/s
-  settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
+  settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const uint16_t errorCode = can.begin (settings, [] { can.isr () ; }) ;
   if (0 == errorCode) {
     Serial.println ("Can ok") ;
