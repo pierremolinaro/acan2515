@@ -90,7 +90,7 @@ For example (`loopbackUsingFilters` sketch):
 
 ```cpp
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125 * 1000) ;
-  settings.mRequestedMode = ACAN2515RequestedMode::LoopBackMode ; // Select loopback mode
+  settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const ACAN2515Mask rxm0 = extended2515Mask (0x1FFFFFFF) ; // For filter #0 and #1
   const ACAN2515Mask rxm1 = standard2515Mask (0x7F0, 0xFF, 0) ; // For filter #2 to #5
   const ACAN2515AcceptanceFilter filters [] = {
