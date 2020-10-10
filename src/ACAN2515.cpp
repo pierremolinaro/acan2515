@@ -868,14 +868,13 @@ uint8_t ACAN2515::receiveErrorCounter (void) {
 //----------------------------------------------------------------------------------------------------------------------
 
 bool ACAN2515::tryToSend (const CANMessage & inMessage) {
-//--- Find send buffer index
+//--- Fix send buffer index
   uint8_t idx = inMessage.idx ;
   if (idx > 2) {
     idx = 0 ;
   }
-//--- Workaround: the Teensy 3.5 / 3.6 "SPI.usingInterrupt" bug
-//    https://github.com/PaulStoffregen/SPI/issues/35
-  #if (defined (__MK64FX512__) || defined (__MK66FX1M0__))
+//--- Bug fix in 2.0.6 (thanks to Fergus Duncan): interrupts were only disabled for Teensy boards
+  #ifndef ARDUINO_ARCH_ESP32
     noInterrupts () ;
   #endif
    //---
@@ -888,7 +887,7 @@ bool ACAN2515::tryToSend (const CANMessage & inMessage) {
         ok = mTransmitBuffer [idx].append (inMessage) ;
       }
     mSPI.endTransaction () ;
-  #if (defined (__MK64FX512__) || defined (__MK66FX1M0__))
+  #ifndef ARDUINO_ARCH_ESP32
     interrupts () ;
   #endif
   return ok ;
