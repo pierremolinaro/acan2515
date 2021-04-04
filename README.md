@@ -2,7 +2,7 @@
 
 ### Compatibility with the ACAN library
 
-This library is fully compatible with the Teensy 3.x ACAN library [https://github.com/pierremolinaro/acan](), it uses a very similar API and the same `CANMessage` class for handling messages.
+This library is fully compatible with the Teensy 3.x ACAN library https://github.com/pierremolinaro/acan, it uses a very similar API and the same `CANMessage` class for handling messages.
 
 ### ACAN2515 library description
 ACAN2515 is a driver for the MCP2515 CAN Controller. It runs on any Arduino compatible board.
