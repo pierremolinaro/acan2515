@@ -1,29 +1,31 @@
 //——————————————————————————————————————————————————————————————————————————————
-//  ACAN2515 Demo in loopback mode
+//  ACAN2515 Demo in loopback mode, for the Raspberry Pi Pico
+//  Thanks to Duncan Greenwood for providing this sample sketch
+//——————————————————————————————————————————————————————————————————————————————
+
+#ifndef ARDUINO_ARCH_RP2040
+#error "Select a Raspberry Pi Pico board"
+#endif
+
 //——————————————————————————————————————————————————————————————————————————————
 
 #include <ACAN2515.h>
 
 //——————————————————————————————————————————————————————————————————————————————
-//  MCP2515 connections:
-//    - standard SPI pins for SCK, MOSI and MISO
-//    - a digital output for CS
-//    - interrupt input pin for INT
-//——————————————————————————————————————————————————————————————————————————————
-// If you use CAN-BUS shield (http://wiki.seeedstudio.com/CAN-BUS_Shield_V2.0/) with Arduino Uno,
-// use B connections for MISO, MOSI, SCK, #9 or #10 for CS (as you want),
-// #2 or #3 for INT (as you want).
-//——————————————————————————————————————————————————————————————————————————————
-// Error codes and possible causes:
-//    In case you see "Configuration error 0x1", the Arduino doesn't communicate
-//       with the 2515. You will get this error if there is no CAN shield or if
-//       the CS pin is incorrect. 
-//    In case you see succes up to "Sent: 17" and from then on "Send failure":
-//       There is a problem with the interrupt. Check if correct pin is configured
+// The Pico has two SPI peripherals, SPI and SPI1. Either (or both) can be used.
+// The are no default pin assignments to these must be set explicitly.
+// At the time of writing (Apr 2021) there is no official Arduino core for the Pico
+// Testing was done with Earle Philhower's arduino-pico core:
+// https://github.com/earlephilhower/arduino-pico
+// There is a small bug in release 1.0.3 so you will require at least 1.0.4
 //——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_CS  = 10 ; // CS input of MCP2515 (adapt to your design) 
-static const byte MCP2515_INT =  3 ; // INT output of MCP2515 (adapt to your design)
+static const byte MCP2515_SCK  = 2 ; // SCK input of MCP2515
+static const byte MCP2515_MOSI = 3 ; // SDI input of MCP2515
+static const byte MCP2515_MISO = 4 ; // SDO output of MCP2517
+
+static const byte MCP2515_CS  = 5 ;  // CS input of MCP2515 (adapt to your design)
+static const byte MCP2515_INT = 1 ;  // INT output of MCP2515 (adapt to your design)
 
 //——————————————————————————————————————————————————————————————————————————————
 //  MCP2515 Driver object
@@ -35,26 +37,31 @@ ACAN2515 can (MCP2515_CS, SPI, MCP2515_INT) ;
 //  MCP2515 Quartz: adapt to your design
 //——————————————————————————————————————————————————————————————————————————————
 
-static const uint32_t QUARTZ_FREQUENCY = 16UL * 1000UL * 1000UL ; // 16 MHz
+static const uint32_t QUARTZ_FREQUENCY = 20UL * 1000UL * 1000UL ; // 20 MHz
 
 //——————————————————————————————————————————————————————————————————————————————
 //   SETUP
 //——————————————————————————————————————————————————————————————————————————————
 
 void setup () {
-//--- Switch on builtin led
+  //--- Switch on builtin led
   pinMode (LED_BUILTIN, OUTPUT) ;
   digitalWrite (LED_BUILTIN, HIGH) ;
-//--- Start serial
-  Serial.begin (38400) ;
-//--- Wait for serial (blink led at 10 Hz during waiting)
+  //--- Start serial
+  Serial.begin (115200) ;
+  //--- Wait for serial (blink led at 10 Hz during waiting)
   while (!Serial) {
     delay (50) ;
     digitalWrite (LED_BUILTIN, !digitalRead (LED_BUILTIN)) ;
   }
-//--- Begin SPI
+  //--- There are no default SPI pins so they must be explicitly assigned
+  SPI.setSCK(MCP2515_SCK);
+  SPI.setTX(MCP2515_MOSI);
+  SPI.setRX(MCP2515_MISO);
+  SPI.setCS(MCP2515_CS);
+  //--- Begin SPI
   SPI.begin () ;
-//--- Configure ACAN2515
+  //--- Configure ACAN2515
   Serial.println ("Configure ACAN2515") ;
   ACAN2515Settings settings (QUARTZ_FREQUENCY, 125UL * 1000UL) ; // CAN bit rate 125 kb/s
   settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
@@ -80,7 +87,7 @@ void setup () {
     Serial.print ("Sample point: ") ;
     Serial.print (settings.samplePointFromBitStart ()) ;
     Serial.println ("%") ;
-  }else{
+  } else {
     Serial.print ("Configuration error 0x") ;
     Serial.println (errorCode, HEX) ;
   }
@@ -104,7 +111,7 @@ void loop () {
       gSentFrameCount += 1 ;
       Serial.print ("Sent: ") ;
       Serial.println (gSentFrameCount) ;
-    }else{
+    } else {
       Serial.println ("Send failure") ;
     }
   }
