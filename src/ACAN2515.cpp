@@ -89,6 +89,7 @@ mSPI (inSPI),
 mSPISettings (10UL * 1000UL * 1000UL, MSBFIRST, SPI_MODE0),  // 10 MHz, UL suffix is required for Arduino Uno
 mCS (inCS),
 mINT (inINT),
+mRolloverEnable (false),
 #ifdef ARDUINO_ARCH_ESP32
   mISRSemaphore (xSemaphoreCreateCounting (10, 0)),
 #endif
@@ -365,8 +366,10 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
   //----------------------------------- Set TXnRTS as inputs
     write2515Register (TXRTSCTRL_REGISTER, 0);
   //----------------------------------- RXBnCTRL
-    write2515Register (RXB0CTRL_REGISTER, ((uint8_t) inSettings.mRolloverEnable) << 2) ;
-    write2515Register (RXB1CTRL_REGISTER, 0x00) ;
+    mRolloverEnable = inSettings.mRolloverEnable ;
+    const uint8_t acceptAll = (inAcceptanceFilterCount == 0) ? 0x60 : 0x00 ;
+    write2515Register (RXB0CTRL_REGISTER, acceptAll | (uint8_t (inSettings.mRolloverEnable) << 2)) ;
+    write2515Register (RXB1CTRL_REGISTER, acceptAll) ;
   //----------------------------------- Setup mask registers
     setupMaskRegister (inRXM0, RXM0SIDH_REGISTER) ;
     setupMaskRegister (inRXM1, RXM1SIDH_REGISTER) ;
@@ -382,6 +385,10 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
         mCallBackFunctionArray [idx] = inAcceptanceFilters [inAcceptanceFilterCount-1].mCallBack ;
         idx += 1 ;
       }
+//     }else{
+//       for (int i=0 ; i<6 ; i++) {
+//         setupMaskRegister (ACAN2515Mask (), RXFSIDH_REGISTER [i]) ;
+//       }
     }
   //----------------------------------- Set TXBi priorities
     write2515Register (TXB0CTRL_REGISTER, inSettings.mTXBPriority & 3) ;
@@ -521,6 +528,9 @@ uint16_t ACAN2515::internalSetFiltersOnTheFly (const ACAN2515Mask inRXM0,
   uint16_t errorCode = setRequestedMode (configurationMode) ;
 //--- Setup mask registers
   if (errorCode == 0) {
+    const uint8_t acceptAll = (inAcceptanceFilterCount == 0) ? 0x60 : 0x00 ;
+    write2515Register (RXB0CTRL_REGISTER, acceptAll | (uint8_t (mRolloverEnable) << 2)) ;
+    write2515Register (RXB1CTRL_REGISTER, acceptAll) ;
     setupMaskRegister (inRXM0, RXM0SIDH_REGISTER) ;
     setupMaskRegister (inRXM1, RXM1SIDH_REGISTER) ;
     if (inAcceptanceFilterCount > 0) {
@@ -656,8 +666,8 @@ void ACAN2515::handleRXBInterrupt (void) {
   if (received) { // Message in RXB0 and / or RXB1
     const bool accessRXB0 = (rxStatus & 0x40) != 0 ;
     CANMessage message ;
-    message.rtr = (rxStatus & 0x08) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
-    message.ext = (rxStatus & 0x10) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
+//     message.rtr = (rxStatus & 0x08) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
+//     message.ext = (rxStatus & 0x10) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
   //--- Set idx field to matching receive filter
     message.idx = rxStatus & 0x07 ;
     if (message.idx > 5) {
@@ -668,10 +678,12 @@ void ACAN2515::handleRXBInterrupt (void) {
     mSPI.transfer (accessRXB0 ? READ_FROM_RXB0SIDH_COMMAND : READ_FROM_RXB1SIDH_COMMAND) ;
   //--- SIDH
     message.id = mSPI.transfer (0) ;
+    message.id <<= 3 ;
   //--- SIDL
     const uint32_t sidl = mSPI.transfer (0) ;
-    message.id <<= 3 ;
     message.id |= sidl >> 5 ;
+    message.rtr = (sidl & 0x10) != 0 ;
+    message.ext = (sidl & 0x08) != 0 ;
   //--- EID8
     const uint32_t eid8 = mSPI.transfer (0) ;
     if (message.ext) {

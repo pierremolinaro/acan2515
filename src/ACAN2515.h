@@ -8,7 +8,7 @@
 
 //··································································································
 
-#include <ACANBuffer16.h>
+#include <ACAN2515_Buffer16.h>
 #include <ACAN2515Settings.h>
 #include <MCP2515ReceiveFilters.h>
 #include <SPI.h>
@@ -127,6 +127,7 @@ class ACAN2515 {
   private: const SPISettings mSPISettings ;
   private: const uint8_t mCS ;
   private: const uint8_t mINT ;
+  private: bool mRolloverEnable ;
   #ifdef ARDUINO_ARCH_ESP32
     public: SemaphoreHandle_t mISRSemaphore ;
   #endif
@@ -136,7 +137,7 @@ class ACAN2515 {
 //    Receive buffer
 //··································································································
 
-  private: ACANBuffer16 mReceiveBuffer ;
+  private: ACAN2515_Buffer16 mReceiveBuffer ;
 
 
 //··································································································
@@ -184,7 +185,7 @@ class ACAN2515 {
 //    Driver transmit buffer
 //··································································································
 
-  private: ACANBuffer16 mTransmitBuffer [3] ;
+  private: ACAN2515_Buffer16 mTransmitBuffer [3] ;
   private: bool mTXBIsFree [3] ;
 
   public: inline uint16_t transmitBufferSize (const uint8_t inIndex) const {
