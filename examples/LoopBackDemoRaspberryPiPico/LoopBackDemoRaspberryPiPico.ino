@@ -20,7 +20,7 @@
 
 static const byte MCP2515_SCK  = 2 ; // SCK input of MCP2515
 static const byte MCP2515_MOSI = 3 ; // SDI input of MCP2515
-static const byte MCP2515_MISO = 4 ; // SDO output of MCP2517
+static const byte MCP2515_MISO = 4 ; // SDO output of MCP2515
 
 static const byte MCP2515_CS  = 5 ;  // CS input of MCP2515 (adapt to your design)
 static const byte MCP2515_INT = 1 ;  // INT output of MCP2515 (adapt to your design)

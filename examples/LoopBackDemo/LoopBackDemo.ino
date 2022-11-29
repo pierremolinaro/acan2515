@@ -18,7 +18,7 @@
 //    In case you see "Configuration error 0x1", the Arduino doesn't communicate
 //       with the 2515. You will get this error if there is no CAN shield or if
 //       the CS pin is incorrect. 
-//    In case you see succes up to "Sent: 17" and from then on "Send failure":
+//    In case you see success up to "Sent: 17" and from then on "Send failure":
 //       There is a problem with the interrupt. Check if correct pin is configured
 //——————————————————————————————————————————————————————————————————————————————
 

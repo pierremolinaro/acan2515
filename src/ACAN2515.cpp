@@ -50,18 +50,19 @@ static const uint8_t RXFSIDH_REGISTER [6] = {0x00, 0x04, 0x08, 0x10, 0x14, 0x18}
 // Note about ESP32
 //··································································································
 //
-// It appears that Arduino ESP32 interrupts are managed in a completely different way from "usual" Arduino:
+// It appears that Arduino ESP32 interrupts are managed in a completely different way
+// from "usual" Arduino:
 //   - SPI.usingInterrupt is not implemented;
 //   - noInterrupts() and interrupts() are NOPs;
-//   - interrupt service routines should be fast, otherwise you get an "Guru Meditation Error: Core 1 panic'ed
-//     (Interrupt wdt timeout on CPU1)".
+//   - interrupt service routines should be fast, otherwise you get smothing like
+//     "Guru Meditation Error: Core 1 panic'ed (Interrupt wdt timeout on CPU1)".
 
 // So we handle the ESP32 interrupt in the following way:
 //   - interrupt service routine performs a xSemaphoreGive on mISRSemaphore of can driver
-//   - this activates the myESP32Task task that performs "isr_core" that is done by interrupt service routine
-//     in "usual" Arduino;
-//   - as this task runs in parallel with setup / loop routines, SPI access is natively protected by the
-//     beginTransaction / endTransaction pair, that manages a mutex.
+//   - this activates the myESP32Task task that performs "isr_core" that is done
+//     by interrupt service routine in "usual" Arduino;
+//   - as this task runs in parallel with setup / loop routines, SPI access is natively
+//     protected by the beginTransaction / endTransaction pair, that manages a mutex.
 
 //··································································································
 
@@ -69,12 +70,21 @@ static const uint8_t RXFSIDH_REGISTER [6] = {0x00, 0x04, 0x08, 0x10, 0x14, 0x18}
   static void myESP32Task (void * pData) {
     ACAN2515 * canDriver = (ACAN2515 *) pData ;
     while (1) {
+      canDriver->attachMCP2515InterruptPin () ;
       xSemaphoreTake (canDriver->mISRSemaphore, portMAX_DELAY) ;
       bool loop = true ;
       while (loop) {
         loop = canDriver->isr_core () ;
-	    }
+      }
     }
+  }
+#endif
+
+//··································································································
+
+#ifdef ARDUINO_ARCH_ESP32
+  void ACAN2515::attachMCP2515InterruptPin (void) {
+    attachInterrupt (digitalPinToInterrupt (mINT), mInterruptServiceRoutine, ONLOW) ;
   }
 #endif
 
@@ -197,17 +207,17 @@ uint16_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
   }
 //--- Configure interrupt only if no error (thanks to mvSarma)
   if (errorCode == 0) {
-    #ifdef ARDUINO_ARCH_ESP32
-      xTaskCreate (myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL) ;
-    #endif
-    if (mINT != 255) { // 255 means interrupt is not used
+     if (mINT != 255) { // 255 means interrupt is not used
       #ifdef ARDUINO_ARCH_ESP32
-        attachInterrupt (itPin, inInterruptServiceRoutine, FALLING) ;
+        mInterruptServiceRoutine = inInterruptServiceRoutine ;
       #else
         mSPI.usingInterrupt (itPin) ; // usingInterrupt is not implemented in Arduino ESP32
         attachInterrupt (itPin, inInterruptServiceRoutine, LOW) ;
       #endif
     }
+    #ifdef ARDUINO_ARCH_ESP32
+      xTaskCreate (myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL) ;
+    #endif
   }
 //----------------------------------- Return
   return errorCode ;
@@ -385,10 +395,6 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
         mCallBackFunctionArray [idx] = inAcceptanceFilters [inAcceptanceFilterCount-1].mCallBack ;
         idx += 1 ;
       }
-//     }else{
-//       for (int i=0 ; i<6 ; i++) {
-//         setupMaskRegister (ACAN2515Mask (), RXFSIDH_REGISTER [i]) ;
-//       }
     }
   //----------------------------------- Set TXBi priorities
     write2515Register (TXB0CTRL_REGISTER, inSettings.mTXBPriority & 3) ;
@@ -603,10 +609,13 @@ void ACAN2515::end (void) {
 //··································································································
 
 #ifdef ARDUINO_ARCH_ESP32
-  void ACAN2515::isr (void) {
+  void IRAM_ATTR ACAN2515::isr (void) {
+    detachInterrupt (digitalPinToInterrupt (mINT)) ;
     BaseType_t xHigherPriorityTaskWoken = pdFALSE ;
     xSemaphoreGiveFromISR (mISRSemaphore, &xHigherPriorityTaskWoken) ;
-    portYIELD_FROM_ISR () ;
+    if (xHigherPriorityTaskWoken) {
+      portYIELD_FROM_ISR () ;
+    }
   }
 #endif
 
@@ -666,8 +675,6 @@ void ACAN2515::handleRXBInterrupt (void) {
   if (received) { // Message in RXB0 and / or RXB1
     const bool accessRXB0 = (rxStatus & 0x40) != 0 ;
     CANMessage message ;
-//     message.rtr = (rxStatus & 0x08) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
-//     message.ext = (rxStatus & 0x10) != 0 ; // Thanks to Arjan-Woltjer for having fixed this bug
   //--- Set idx field to matching receive filter
     message.idx = rxStatus & 0x07 ;
     if (message.idx > 5) {
@@ -682,7 +689,7 @@ void ACAN2515::handleRXBInterrupt (void) {
   //--- SIDL
     const uint32_t sidl = mSPI.transfer (0) ;
     message.id |= sidl >> 5 ;
-    message.rtr = (sidl & 0x10) != 0 ;
+    message.rtr = (sidl & 0x10) != 0 ; // Only significant for standard frame
     message.ext = (sidl & 0x08) != 0 ;
   //--- EID8
     const uint32_t eid8 = mSPI.transfer (0) ;
@@ -701,6 +708,9 @@ void ACAN2515::handleRXBInterrupt (void) {
   //--- DLC
     const uint8_t dlc = mSPI.transfer (0) ;
     message.len = dlc & 0x0F ;
+    if (message.ext) { // Added in 2.1.1 (thanks to Achilles)
+      message.rtr = (dlc & 0x40) != 0 ; // RTR bit in DLC is significant only for extended frame
+    }
   //--- Read data
     for (int i=0 ; i<message.len ; i++) {
       message.data [i] = mSPI.transfer (0) ;
@@ -887,6 +897,26 @@ uint8_t ACAN2515::errorFlagRegister (void) {
 
 //··································································································
 //   MESSAGE EMISSION
+//··································································································
+
+bool ACAN2515::sendBufferNotFullForIndex (const uint32_t inIndex) {
+//--- Fix send buffer index
+  uint8_t idx = inIndex ;
+  if (idx > 2) {
+    idx = 0 ;
+  }
+  #ifndef ARDUINO_ARCH_ESP32
+    noInterrupts () ;
+  #endif
+    mSPI.beginTransaction (mSPISettings) ;
+      const bool ok = mTXBIsFree [idx] || !mTransmitBuffer [idx].isFull () ;
+    mSPI.endTransaction () ;
+  #ifndef ARDUINO_ARCH_ESP32
+    interrupts () ;
+  #endif
+  return ok ;
+}
+
 //··································································································
 
 bool ACAN2515::tryToSend (const CANMessage & inMessage) {

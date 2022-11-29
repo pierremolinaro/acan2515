@@ -44,6 +44,7 @@ class ACAN2515_Buffer16 {
   // Accessors
   //································································································
 
+  public: inline bool isFull (void) const { return mCount == mSize ; }
   public: inline uint16_t size (void) const { return mSize ; }
   public: inline uint16_t count (void) const { return mCount ; }
   public: inline uint16_t peakCount (void) const { return mPeakCount ; }

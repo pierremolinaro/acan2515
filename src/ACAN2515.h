@@ -130,6 +130,7 @@ class ACAN2515 {
   private: bool mRolloverEnable ;
   #ifdef ARDUINO_ARCH_ESP32
     public: SemaphoreHandle_t mISRSemaphore ;
+    private: void (* mInterruptServiceRoutine) (void) = nullptr ;
   #endif
 
 
@@ -177,6 +178,8 @@ class ACAN2515 {
 //··································································································
 //    Transmitting messages
 //··································································································
+
+  public: bool sendBufferNotFullForIndex (const uint32_t inIndex) ; // 0 ... 2
 
   public: bool tryToSend (const CANMessage & inMessage) ;
 
@@ -250,6 +253,9 @@ class ACAN2515 {
                                                 const ACAN2515AcceptanceFilter inAcceptanceFilters [],
                                                 const uint8_t inAcceptanceFilterCount) ;
 
+  #ifdef ARDUINO_ARCH_ESP32
+    public: void attachMCP2515InterruptPin (void) ;
+  #endif
 
 //··································································································
 //    MCP2515 controller state

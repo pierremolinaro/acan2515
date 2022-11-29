@@ -16,8 +16,8 @@
 //  By default, Arduino SPI uses VSPI, leaving HSPI unused.
 //  Default VSPI pins are: SCK=18, MISO=19, MOSI=23.
 //  You can change the default pin with additional begin arguments
-//    SPI.begin (MCP2517_SCK, MCP2517_MISO, MCP2517_MOSI)
-//  CS input of MCP2517 should be connected to a digital output port
+//    SPI.begin (MCP2515_SCK, MCP2515_MISO, MCP2515_MOSI)
+//  CS input of MCP2515 should be connected to a digital output port
 //  Notes:
 //    - GPIOs 34 to 39 are GPIs – input only pins. These pins don’t have internal pull-ups or
 //      pull-down resistors. They can’t be used as outputs.
@@ -25,9 +25,9 @@
 // See https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 //——————————————————————————————————————————————————————————————————————————————
 
-static const byte MCP2515_SCK  = 26 ; // SCK input of MCP2517 
-static const byte MCP2515_MOSI = 19 ; // SDI input of MCP2517  
-static const byte MCP2515_MISO = 18 ; // SDO output of MCP2517 
+static const byte MCP2515_SCK  = 26 ; // SCK input of MCP2515 
+static const byte MCP2515_MOSI = 19 ; // SDI input of MCP2515  
+static const byte MCP2515_MISO = 18 ; // SDO output of MCP2515 
 
 static const byte MCP2515_CS  = 17 ; // CS input of MCP2515 (adapt to your design) 
 
