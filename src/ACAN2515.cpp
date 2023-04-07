@@ -200,10 +200,19 @@ uint16_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
         mSPI.transfer (RESET_COMMAND) ;
       unselect () ;
     mSPI.endTransaction () ;
-  //---
-    delayMicroseconds (10) ;
+  //--- DS20001801J, page 55: The Oscillator Start-up Timer keeps the device in a Reset
+  // state for 128 OSC1 clock cycles after the occurrence of a Power-on Reset, SPI Reset,
+  // after the assertion of the RESET pin, and after a wake-up from Sleep mode
+  // Fot a 1 MHz clock --> 128 µs
+  // So delayMicroseconds (10) is too short --> use delay (2)
+  //    delayMicroseconds (10) ; // Removed in release 2.1.2
+    delay (2) ; // Added in release 2.1.2
   //--- Internal begin
-    errorCode = internalBeginOperation (inSettings, inRXM0, inRXM1, inAcceptanceFilters, inAcceptanceFilterCount) ;
+    errorCode = internalBeginOperation (inSettings,
+                                        inRXM0,
+                                        inRXM1,
+                                        inAcceptanceFilters,
+                                        inAcceptanceFilterCount) ;
   }
 //--- Configure interrupt only if no error (thanks to mvSarma)
   if (errorCode == 0) {
