@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 
+
+class CANMessage ;
+
 //··································································································
 
 class ACAN2515Settings {
@@ -155,6 +158,15 @@ class ACAN2515Settings {
 
   public: uint16_t CANBitSettingConsistency (void) const ;
 
+//··································································································
+//    Static buffer allocation
+//··································································································
+
+  public: bool mReceiveAndTxBuffersStatic = false ;
+  public: CANMessage * mReceiveBuffer = nullptr ;
+  public: CANMessage * mTxb0Buffer = nullptr ;
+  public: CANMessage * mTxb1Buffer = nullptr ;
+  public: CANMessage * mTxb2Buffer = nullptr ;
 
 //··································································································
 //    Constants returned by CANBitSettingConsistency

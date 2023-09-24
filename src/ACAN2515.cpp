@@ -317,17 +317,32 @@ uint16_t ACAN2515::internalBeginOperation (const ACAN2515Settings & inSettings,
     errorCode |= kInconsistentBitRateSettings ;
   }
 //----------------------------------- Allocate buffer
-  if (!mReceiveBuffer.initWithSize (inSettings.mReceiveBufferSize)) {
-    errorCode |= kCannotAllocateReceiveBuffer ;
-  }
-  if (!mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size)) {
-    errorCode |= kCannotAllocateTransmitBuffer0 ;
-  }
-  if (!mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size)) {
-    errorCode |= kCannotAllocateTransmitBuffer1 ;
-  }
-  if (!mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size)) {
-    errorCode |= kCannotAllocateTransmitBuffer2 ;
+  if (inSettings.mReceiveAndTxBuffersStatic) {
+    if (!mReceiveBuffer.initWithStaticSize (inSettings.mReceiveBuffer, inSettings.mReceiveBufferSize)) {
+      errorCode |= kCannotAllocateReceiveBuffer ;
+    }
+    if (!mTransmitBuffer [0].initWithStaticSize (inSettings.mTxb0Buffer, inSettings.mTransmitBuffer0Size)) {
+      errorCode |= kCannotAllocateTransmitBuffer0 ;
+    }
+    if (inSettings.mTransmitBuffer1Size > 0 && !mTransmitBuffer [1].initWithStaticSize (inSettings.mTxb1Buffer, inSettings.mTransmitBuffer1Size)) {
+      errorCode |= kCannotAllocateTransmitBuffer1 ;
+    }
+    if (inSettings.mTransmitBuffer2Size > 0 && !mTransmitBuffer [2].initWithStaticSize (inSettings.mTxb2Buffer, inSettings.mTransmitBuffer2Size)) {
+      errorCode |= kCannotAllocateTransmitBuffer2 ;
+    }
+  } else {
+    if (!mReceiveBuffer.initWithSize (inSettings.mReceiveBufferSize)) {
+      errorCode |= kCannotAllocateReceiveBuffer ;
+    }
+    if (!mTransmitBuffer [0].initWithSize (inSettings.mTransmitBuffer0Size)) {
+      errorCode |= kCannotAllocateTransmitBuffer0 ;
+    }
+    if (!mTransmitBuffer [1].initWithSize (inSettings.mTransmitBuffer1Size)) {
+      errorCode |= kCannotAllocateTransmitBuffer1 ;
+    }
+    if (!mTransmitBuffer [2].initWithSize (inSettings.mTransmitBuffer2Size)) {
+      errorCode |= kCannotAllocateTransmitBuffer2 ;
+    }
   }
   mTXBIsFree [0] = true ;
   mTXBIsFree [1] = true ;

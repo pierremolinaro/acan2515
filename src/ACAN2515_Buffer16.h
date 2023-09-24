@@ -19,7 +19,8 @@ class ACAN2515_Buffer16 {
   mSize (0),
   mReadIndex (0),
   mCount (0),
-  mPeakCount (0) {
+  mPeakCount (0),
+  mDynamicAllocate (true) {
   }
 
   //································································································
@@ -27,7 +28,9 @@ class ACAN2515_Buffer16 {
   //································································································
 
   public: ~ ACAN2515_Buffer16 (void) {
-    delete [] mBuffer ;
+    if (mDynamicAllocate) {
+      delete [] mBuffer ;
+    }
   }
 
   //································································································
@@ -39,6 +42,7 @@ class ACAN2515_Buffer16 {
   private: uint16_t mReadIndex ;
   private: uint16_t mCount ;
   private: uint16_t mPeakCount ; // > mSize if overflow did occur
+  private: bool mDynamicAllocate ;
 
   //································································································
   // Accessors
@@ -54,13 +58,34 @@ class ACAN2515_Buffer16 {
   //································································································
 
   public: bool initWithSize (const uint16_t inSize) {
-    delete [] mBuffer ;
+    if (mDynamicAllocate) {
+      delete [] mBuffer ;
+    }
     mBuffer = new CANMessage [inSize] ;
     const bool ok = mBuffer != NULL ;
     mSize = ok ? inSize : 0 ;
     mReadIndex = 0 ;
     mCount = 0 ;
     mPeakCount = 0 ;
+    mDynamicAllocate = true;
+    return ok ;
+  }
+
+  //································································································
+  // initWithStaticSize
+  //································································································
+
+  public: bool initWithStaticSize (CANMessage * buffer, const uint16_t inSize) {
+    if (mDynamicAllocate) {
+      delete [] mBuffer ;
+    }
+    mBuffer = buffer ;
+    const bool ok = mBuffer != NULL ;
+    mSize = ok ? inSize : 0 ;
+    mReadIndex = 0 ;
+    mCount = 0 ;
+    mPeakCount = 0 ;
+    mDynamicAllocate = false;
     return ok ;
   }
 
@@ -106,7 +131,9 @@ class ACAN2515_Buffer16 {
   //································································································
 
   public: void free (void) {
-    delete [] mBuffer ; mBuffer = nullptr ;
+    if (mDynamicAllocate) {
+      delete [] mBuffer ; mBuffer = nullptr ;
+    }
     mSize = 0 ;
     mReadIndex = 0 ;
     mCount = 0 ;
