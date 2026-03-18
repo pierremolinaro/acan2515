@@ -220,7 +220,9 @@ uint16_t ACAN2515::beginWithoutFilterCheck (const ACAN2515Settings & inSettings,
       #ifdef ARDUINO_ARCH_ESP32
         mInterruptServiceRoutine = inInterruptServiceRoutine ;
       #else
-        mSPI.usingInterrupt (itPin) ; // usingInterrupt is not implemented in Arduino ESP32
+        #ifndef ARDUINO_ARCH_ESP8266
+          mSPI.usingInterrupt (itPin) ; // usingInterrupt is not implemented in Arduino ESP32/ESP8266
+        #endif
         attachInterrupt (itPin, inInterruptServiceRoutine, LOW) ;
       #endif
     }
