@@ -716,7 +716,8 @@ void ACAN2515::handleRXBInterrupt (void) {
     }
   //--- DLC
     const uint8_t dlc = mSPI.transfer (0) ;
-    message.len = dlc & 0x0F ;
+  //--- DLC 9...15 is valid on the bus and means 8 data bytes; data[] holds only 8
+    message.len = ((dlc & 0x0F) > 8) ? 8 : (dlc & 0x0F) ;
     if (message.ext) { // Added in 2.1.1 (thanks to Achilles)
       message.rtr = (dlc & 0x40) != 0 ; // RTR bit in DLC is significant only for extended frame
     }
